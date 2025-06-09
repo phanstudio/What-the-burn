@@ -5,5 +5,5 @@
       "src": "/(.*)",
       "dest": "core/wsgi.py"
     }
-  ],
+  ]
 }
