@@ -1,9 +1,8 @@
 {
-  "version": 2,
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "core/wsgi.py"
+      "dest": "/core/wsgi.py"
     }
   ]
 }
