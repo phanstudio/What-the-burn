@@ -6,5 +6,5 @@
       "dest": "core/wsgi.py"
     }
   ],
-  "buildCommand": "cd backend && python manage.py collectstatic --noinput"
+  "buildCommand": "python manage.py collectstatic --noinput"
 }
