@@ -1,8 +1,11 @@
 import React from 'react'
+import NFTSelect from '../components/burnPage/SelectNFTs'
 
 function BurnPage() {
     return (
-        <div>BurnPage</div>
+        <div>
+            <NFTSelect />
+        </div>
     )
 }
 
