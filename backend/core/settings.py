@@ -14,7 +14,8 @@ ALLOWED_HOSTS = [
     'localhost', 
     'what-the-burn-backend-phanstudios-projects.vercel.app',
     'what-the-burn-yvet.vercel.app',
-    'what-the-burn-backend-git-main-phanstudios-projects.vercel.app'
+    'what-the-burn-backend-git-main-phanstudios-projects.vercel.app',
+    'what-the-burn-backend-61nfegt7x-phanstudios-projects.vercel.app'
 ]
 
 INSTALLED_APPS = [
