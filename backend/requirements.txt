@@ -7,3 +7,4 @@ django_redis
 requests
 eth-account
 web3
+djangorestframework_simplejwt
