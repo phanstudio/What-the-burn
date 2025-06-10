@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.env
+*.venv
+.env/
+.venv/
+env/
+venv/
+ENV/
+Pipfile.lock
+poetry.lock
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+*.pot
+*.pyc
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Test & coverage
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+htmlcov/
+
+# MyPy, Pyright, Pylint, etc.
+.mypy_cache/
+.pyright/
+.pylint.d/
+
+# Node modules (if frontend is part of the repo)
+node_modules/
+
+# Git
+*.orig
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Celery beat & cache files (if used)
+celerybeat-schedule
+*.cache
+
+# IDEs
+.idea/
+*.iml
