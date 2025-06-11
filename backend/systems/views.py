@@ -104,7 +104,7 @@ class Gettokens(APIView):
         logger.info("img"+str(img_url))
         
         tokens = self.tokens_owned(user.address, img_url.url)
-        logger.info("token"+tokens)
+        logger.info("token"+str(tokens))
 
         return Response({
             "tokens": tokens
