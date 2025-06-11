@@ -129,6 +129,7 @@ class Gettokens(APIView):
                 "image":f"{image_url}{entry["tokenId"]}.png",
                 "name": f"What?! {entry["tokenId"]}" # can make dynamic or store
                 } for entry in response_json["data"]["transfers"]]
+            print(token_ids)
             return token_ids
         else:
             print("Error:", response.status_code, response.text)
