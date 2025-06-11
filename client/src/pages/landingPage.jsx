@@ -15,6 +15,7 @@ function LandingPage() {
     const { data: walletClient } = useWalletClient();
 
     const [jwt, setJwt] = useState(null);
+    // we are getting the jwt we want to use it everywhere in the code
 
     const connectAndValidate = async () => {
         if (!walletClient || !isConnected) return;

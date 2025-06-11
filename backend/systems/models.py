@@ -1,5 +1,4 @@
 from django.db import models
-import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 class EthUserManager(BaseUserManager):
@@ -40,4 +39,24 @@ class EthUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.address
 
-# add the record the transactions
+class ImageUrl(models.Model):
+    """Represents a coin on the platform"""
+    id = models.IntegerField(default=1, unique=True, primary_key=True)
+    url = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.url}"
+
+class Update_Request(models.Model):
+    transaction_hash = models.CharField(max_length=88, primary_key=True, unique= True, editable= False)
+    address = models.CharField(max_length=44, editable=False)
+    update_id = models.IntegerField()
+    burn_id = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    update_name = models.CharField(max_length=100)
+    image_url = models.CharField(max_length=500)
+    updated = models.BooleanField(default= False)
+
+    def __str__(self):
+        return f"{self.update_name} ({self.address})"
+    

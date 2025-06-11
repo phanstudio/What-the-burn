@@ -15,7 +15,7 @@ ALLOWED_HOSTS = [
     'what-the-burn-backend-phanstudios-projects.vercel.app',
     'what-the-burn-yvet.vercel.app',
     'what-the-burn-backend-git-main-phanstudios-projects.vercel.app',
-    'phanstudios-projects.vercel.app'
+    '.vercel.app'
 ]
 
 INSTALLED_APPS = [
@@ -111,6 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+ETH_COLLECTION_CONTRACT = "0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350"
+ETH_PROVIDER_URL = "https://rpc.hyperliquid.xyz/evm"
 
 LANGUAGE_CODE = 'en-us'
 

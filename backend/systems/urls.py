@@ -1,12 +1,17 @@
 from django.urls import path
 from systems.views import (
     index,
-    GetSignMessageView, VerifySignatureView
+    GetSignMessageView, VerifySignatureView,
+    UpdateImageUrl, UpdateImageUrlFromIPFS,
+    Gettokens, UpdateRequestCreateView
 )
 
 urlpatterns = [
     path('', index),
     path('sign-message/', GetSignMessageView.as_view(), name='sign-message'),
     path('verify-signature/', VerifySignatureView.as_view(), name='verify-signature'),
-    # path('user-tokens/', UserTokensView.as_view(), name='user-tokens'),
+    path('update-image-url/', UpdateImageUrl.as_view(), name='update-image-url'),
+    path('update-from-ipfs/', UpdateImageUrlFromIPFS.as_view(), name='update-image-url-from-ipfs'),
+    path('user-tokens/', Gettokens.as_view(), name='user-tokens'),
+    path('update-request/', UpdateRequestCreateView.as_view(), name='create-update-request'),
 ]
