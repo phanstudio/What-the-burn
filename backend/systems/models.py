@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.conf import settings
 
 class EthUserManager(BaseUserManager):
     def create_user(self, address, password=None, **extra_fields):
@@ -62,13 +63,13 @@ class Update_Request(models.Model):
 
 # your_app/models.py
 from django.db import models
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
 
 class ExpiringToken(models.Model):
     key = models.CharField(max_length=40, primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
@@ -77,5 +78,5 @@ class ExpiringToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + datetime.timedelta(hours=6)  # Session TTL
+            self.expires_at = timezone.now() + datetime.timedelta(hours=6) # Session TTL
         return super().save(*args, **kwargs)
