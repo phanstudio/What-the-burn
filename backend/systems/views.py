@@ -19,14 +19,14 @@ from django.utils.crypto import get_random_string
 from .serializers import SignatureVerifySerializer
 import uuid
 import os
-from dotenv import load_dotenv
 from django.utils import timezone
 from .permissions import HasCronSecretPermission
+# from .auth import ExpiringTokenAuthentication
+from dotenv import load_dotenv
 import logging
-from .auth import ExpiringTokenAuthentication
-
-logger = logging.getLogger(__name__)
 load_dotenv()
+# logger = logging.getLogger(__name__)
+
 
 def index(request):
     now = datetime.now()
@@ -92,19 +92,15 @@ class VerifySignatureView(APIView):
         })
 
 class Gettokens(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [ExpiringTokenAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [ExpiringTokenAuthentication]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
-        logger.info("wallet"+str(wallet))
-
         user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
-        logger.info("img"+str(img_url))
         
         tokens = self.tokens_owned(user.address, img_url.url)
-        logger.info("token"+str(tokens))
 
         return Response({
             "tokens": tokens
