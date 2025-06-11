@@ -9,7 +9,14 @@ SECRET_KEY = os.getenv('SECERT_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'what-the-burn-backend-61nfegt7x-phanstudios-projects.vercel.app']
+ALLOWED_HOSTS = [
+    '127.0.0.1', 
+    'localhost', 
+    'what-the-burn-backend-phanstudios-projects.vercel.app',
+    'what-the-burn-yvet.vercel.app',
+    'what-the-burn-backend-git-main-phanstudios-projects.vercel.app',
+    'phanstudios-projects.vercel.app'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
