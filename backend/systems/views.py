@@ -92,21 +92,19 @@ class VerifySignatureView(APIView):
         })
 
 class Gettokens(APIView):
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [ExpiringTokenAuthentication]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
         user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
         
-        tokens = self.tokens_owned(user.address, img_url.url)
+        tokens = self.tokens_owned(wallet, img_url.url)#user.address, img_url.url)
 
         return Response({
             "tokens": tokens
         })
 
-    def tokens_owned(self, owner_address, image_url):
+    def tokens_owned(self, owner_address, image_url) -> list:
         url = os.getenv('THEGRAPH_URL')
 
         query = f"""
@@ -131,9 +129,10 @@ class Gettokens(APIView):
                 "image":f"{image_url}{entry["tokenId"]}.png",
                 "name": f"What?! {entry["tokenId"]}" # can make dynamic or store
                 } for entry in response_json["data"]["transfers"]]
-            print(token_ids)
+            return token_ids
         else:
             print("Error:", response.status_code, response.text)
+            return []
 
 class UpdateImageUrl(APIView):
     permission_classes = [IsAuthenticated]
