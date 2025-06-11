@@ -25,7 +25,7 @@ from .permissions import HasCronSecretPermission
 from dotenv import load_dotenv
 import logging
 load_dotenv()
-# logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -120,7 +120,7 @@ class Gettokens(APIView):
         }}
         """
         response = requests.post(url, json={'query': query})
-
+        logger.info(response.status_code)
         # Check response
         if response.status_code == 200:
             response_json = response.json()
@@ -130,6 +130,7 @@ class Gettokens(APIView):
                 "name": f"What?! {entry["tokenId"]}" # can make dynamic or store
                 } for entry in response_json["data"]["transfers"]]
             print(token_ids)
+            logger.info(response.json())
             return token_ids
         else:
             print("Error:", response.status_code, response.text)
