@@ -193,10 +193,24 @@ class UpdateRequestCreateView(generics.CreateAPIView):
 # your_app/views.py
 from .permissions import HasCronSecretPermission
 
+# class CleanupExpiredTokensView(APIView):
+#     permission_classes = [HasCronSecretPermission]
+
+#     def post(self, request):
+#         count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
+#         return Response({"deleted_tokens": count})
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 class CleanupExpiredTokensView(APIView):
     permission_classes = [HasCronSecretPermission]
 
     def post(self, request):
-        count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
-        return Response({"deleted_tokens": count})
-
+        try:
+            count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
+            return Response({"deleted_tokens": count})
+        except Exception as e:
+            logger.exception("Failed to cleanup expired tokens")  # Logs full traceback
+            return Response({"error": "Internal server error"}, status=500)
