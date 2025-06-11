@@ -14,8 +14,14 @@ function LandingPage() {
     const { address, isConnected } = useAccount();
     const { data: walletClient } = useWalletClient();
 
-    const [jwt, setJwt] = useState(null);
-    // we are getting the jwt we want to use it everywhere in the code
+    const [jwt, setJwt] = useState(() => sessionStorage.getItem('jwt'));
+
+    useEffect(() => {
+        if (!isConnected) {
+            sessionStorage.removeItem('jwt');
+            setJwt(null);
+        }
+    }, [isConnected]);
 
     const connectAndValidate = async () => {
         if (!walletClient || !isConnected) return;
@@ -29,8 +35,8 @@ function LandingPage() {
             // Step 1: Request message to sign
             const messageResponse = await axios.get( // use the main
                 `https://what-the-burn-backend-phanstudios-projects.vercel.app/sign-message/?wallet=${walletAddress}`
+                // `http://localhost:8000/sign-message/?wallet=${walletAddress}`, 
             );
-            console.log(messageResponse.data, "s")
             const messageToSign = messageResponse.data.message;
 
             // Step 2: Sign the message
@@ -40,16 +46,18 @@ function LandingPage() {
             // Step 3: Send signature for verification
             const verifyResponse = await axios.post(
                 'https://what-the-burn-backend-phanstudios-projects.vercel.app/verify-signature/',
+                // 'http://localhost:8000/verify-signature/', 
                 {
                     wallet_address: walletAddress,
                     signature: signature,
                 }
             );
 
-            const token = verifyResponse.data.access;
+            // expires_at // for the sessions length
+            const token = verifyResponse.data.token;
+            sessionStorage.setItem('jwt', token);
             setJwt(token);
-
-            console.log("✅ Wallet authenticated. JWT:", token);
+            // add a callback to indicate the jwt has connected
         } catch (err) {
             console.error("❌ Wallet verification failed:", err);
         }
@@ -80,9 +88,8 @@ function LandingPage() {
 
             {isConnected && (
                 <>
-                    { !jwt&&(
+                    { !jwt&&( // add a model for signing the message
                         <>
-                            <p className="text-white mt-4">Connected Wallet: {address}</p>
                             <button
                                 onClick={connectAndValidate}
                                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"

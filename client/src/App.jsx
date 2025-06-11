@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/landingPage'
 import BurnPage from './pages/burnPage'
-
-
-
+import ProtectedRoute from './components/custom/ProtectedRoute'
 
 function App() {
 
@@ -13,8 +11,12 @@ function App() {
 
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/burn" element={
+        <ProtectedRoute>
+          <BurnPage />
+        </ProtectedRoute>
+      } />
 
-      <Route path="/burn" element={<BurnPage />} />
     </Routes>
 
   )
