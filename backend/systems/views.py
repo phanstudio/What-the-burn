@@ -111,8 +111,8 @@ class Gettokens(APIView):
         query owner {{
         transfers(
             where: {{
-            to: "{owner_address}",
-            from_not: "{owner_address}"
+            to: "{owner_address.lower()}",
+            from_not: "{owner_address.lower()}"
             }}
         ) {{
             tokenId
