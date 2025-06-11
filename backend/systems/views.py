@@ -21,6 +21,11 @@ import uuid
 import os
 from dotenv import load_dotenv
 from django.utils import timezone
+from .permissions import HasCronSecretPermission
+import logging
+
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 def index(request):
@@ -91,13 +96,14 @@ class Gettokens(APIView):
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
-        print(wallet)
-        self.stdout.write(self.style.SUCCESS(str(wallet)))
+        logger.info("wallet"+str(wallet))
 
         user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
+        logger.info("img"+str(img_url))
         
         tokens = self.tokens_owned(user.address, img_url.url)
+        logger.info("token"+tokens)
 
         return Response({
             "tokens": tokens
@@ -191,20 +197,6 @@ class UpdateRequestCreateView(generics.CreateAPIView):
     queryset = Update_Request.objects.all()
     serializer_class = UpdateRequestSerializer
 
-# your_app/views.py
-from .permissions import HasCronSecretPermission
-
-# class CleanupExpiredTokensView(APIView):
-#     permission_classes = [HasCronSecretPermission]
-
-#     def post(self, request):
-#         count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
-#         return Response({"deleted_tokens": count})
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 class CleanupExpiredTokensView(APIView):
     permission_classes = [HasCronSecretPermission]
 
@@ -213,6 +205,5 @@ class CleanupExpiredTokensView(APIView):
             count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
             return Response({"deleted_tokens": count})
         except Exception as e:
-            logger.exception("Failed to cleanup expired tokens")  # Logs full traceback
             return Response({"error": f"Internal server error{e}"}, status=500)#Response({"error": "Internal server error"}, status=500)
             
