@@ -33,8 +33,9 @@ INSTALLED_APPS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://solana-market-place.onrender.com",
-    # "*",
+    "https://what-the-burn-phanstudios-projects.vercel.app",
+    "https://what-the-burn.vercel.app",
+    "https://what-the-burn-git-main-phanstudios-projects.vercel.app",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
