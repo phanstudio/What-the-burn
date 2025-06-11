@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from django.http import HttpResponse
 from .models import EthUser, ImageUrl, Update_Request
 import uuid
@@ -6,7 +6,6 @@ from eth_account.messages import encode_defunct
 from eth_account import Account
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     SignatureVerifySerializer, UpdateRequestSerializer
 )
@@ -15,6 +14,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from web3 import Web3
 import requests
 from rest_framework import generics
+from .models import EthUser, ExpiringToken
+from django.utils.crypto import get_random_string
+from .serializers import SignatureVerifySerializer
+import uuid
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -67,16 +70,19 @@ class VerifySignatureView(APIView):
         if recovered.lower() != wallet.lower():
             return Response({"error": "Signature mismatch"}, status=403)
 
-        # Signature valid — issue JWT
-        refresh = RefreshToken.for_user(user)
+        ExpiringToken.objects.filter(user=user).delete()
+        token = ExpiringToken.objects.create(
+            user=user,
+            key=get_random_string(40)
+        )
 
         # Rotate nonce
         user.nonce = str(uuid.uuid4())
         user.save()
 
         return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
+            "token": token.key,
+            "expires_at": token.expires_at
         })
 
 class Gettokens(APIView):
@@ -183,3 +189,14 @@ class UpdateRequestCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Update_Request.objects.all()
     serializer_class = UpdateRequestSerializer
+
+# your_app/views.py
+from .permissions import HasCronSecretPermission
+
+class CleanupExpiredTokensView(APIView):
+    permission_classes = [HasCronSecretPermission]
+
+    def post(self, request):
+        count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
+        return Response({"deleted_tokens": count})
+

@@ -3,7 +3,8 @@ from systems.views import (
     index,
     GetSignMessageView, VerifySignatureView,
     UpdateImageUrl, UpdateImageUrlFromIPFS,
-    Gettokens, UpdateRequestCreateView
+    Gettokens, UpdateRequestCreateView,
+    CleanupExpiredTokensView
 )
 
 urlpatterns = [
@@ -14,4 +15,5 @@ urlpatterns = [
     path('update-from-ipfs/', UpdateImageUrlFromIPFS.as_view(), name='update-image-url-from-ipfs'),
     path('user-tokens/', Gettokens.as_view(), name='user-tokens'),
     path('update-request/', UpdateRequestCreateView.as_view(), name='create-update-request'),
+    path('cleanup-expired-token/', CleanupExpiredTokensView.as_view(), name='cleanup-expired-token'),
 ]

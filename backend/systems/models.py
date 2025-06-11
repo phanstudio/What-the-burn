@@ -59,4 +59,23 @@ class Update_Request(models.Model):
 
     def __str__(self):
         return f"{self.update_name} ({self.address})"
-    
+
+# your_app/models.py
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+import datetime
+
+class ExpiringToken(models.Model):
+    key = models.CharField(max_length=40, primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + datetime.timedelta(hours=6)  # Session TTL
+        return super().save(*args, **kwargs)
