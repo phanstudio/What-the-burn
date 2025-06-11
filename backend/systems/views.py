@@ -95,7 +95,7 @@ class Gettokens(APIView):
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
-        user = EthUser.objects.get(address=wallet)
+        # user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
         
         tokens = self.tokens_owned(wallet, img_url.url)#user.address, img_url.url)
@@ -135,7 +135,6 @@ class Gettokens(APIView):
             return []
 
 class UpdateImageUrl(APIView):
-    permission_classes = [IsAuthenticated]
     def get(self, request):
         url = request.query_params.get("url", "")
         _, _ = ImageUrl.objects.update_or_create(id=1, url=url)
@@ -145,7 +144,6 @@ class UpdateImageUrl(APIView):
         })
 
 class UpdateImageUrlFromIPFS(APIView):
-    permission_classes = [IsAuthenticated]
     def get(self, request):
         url = request.query_params.get("url", "")
         if url == "":
