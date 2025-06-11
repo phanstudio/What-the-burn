@@ -213,4 +213,5 @@ class CleanupExpiredTokensView(APIView):
             return Response({"deleted_tokens": count})
         except Exception as e:
             logger.exception("Failed to cleanup expired tokens")  # Logs full traceback
-            return Response({"error": "Internal server error"}, status=500)
+            return Response({"error": f"Internal server error{e}"}, status=500)#Response({"error": "Internal server error"}, status=500)
+            
