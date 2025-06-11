@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from django.http import HttpResponse
 from .models import EthUser, ImageUrl, Update_Request
 import uuid
@@ -20,6 +20,7 @@ from .serializers import SignatureVerifySerializer
 import uuid
 import os
 from dotenv import load_dotenv
+from django.utils import timezone
 load_dotenv()
 
 def index(request):
