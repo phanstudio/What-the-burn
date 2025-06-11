@@ -84,6 +84,9 @@ class Gettokens(APIView):
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
+        print(wallet)
+        self.stdout.write(self.style.SUCCESS(str(wallet)))
+
         user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
         
