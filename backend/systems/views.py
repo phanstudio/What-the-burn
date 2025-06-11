@@ -23,9 +23,9 @@ from dotenv import load_dotenv
 from django.utils import timezone
 from .permissions import HasCronSecretPermission
 import logging
+from .auth import ExpiringTokenAuthentication
 
 logger = logging.getLogger(__name__)
-
 load_dotenv()
 
 def index(request):
@@ -93,6 +93,7 @@ class VerifySignatureView(APIView):
 
 class Gettokens(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [ExpiringTokenAuthentication]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
