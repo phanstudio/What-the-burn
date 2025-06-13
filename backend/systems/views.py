@@ -21,12 +21,11 @@ import uuid
 import os
 from django.utils import timezone
 from .permissions import HasCronSecretPermission
-# from .auth import ExpiringTokenAuthentication
 from dotenv import load_dotenv
 import logging
+
 load_dotenv()
 logger = logging.getLogger(__name__)
-
 
 def index(request):
     now = datetime.now()
@@ -91,7 +90,7 @@ class VerifySignatureView(APIView):
             "expires_at": token.expires_at
         })
 
-class Gettokens(APIView):
+class Gettokens(APIView): # remove an error this
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
 
@@ -201,5 +200,4 @@ class CleanupExpiredTokensView(APIView):
             count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
             return Response({"deleted_tokens": count})
         except Exception as e:
-            return Response({"error": f"Internal server error{e}"}, status=500)#Response({"error": "Internal server error"}, status=500)
-            
+            return Response({"error": f"Internal server error{e}"}, status=500)#Response({"error": "Internal server error"}, status=500)    

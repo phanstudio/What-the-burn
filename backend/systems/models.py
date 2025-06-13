@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.conf import settings
+from django.utils import timezone
+import datetime
 
 class EthUserManager(BaseUserManager):
     def create_user(self, address, password=None, **extra_fields):
@@ -35,7 +37,7 @@ class EthUser(AbstractBaseUser, PermissionsMixin):
     objects = EthUserManager()
 
     USERNAME_FIELD = 'address'
-    REQUIRED_FIELDS = []  # Required for Django — even if empty!
+    REQUIRED_FIELDS = []
 
     def __str__(self):
         return self.address
@@ -60,12 +62,6 @@ class Update_Request(models.Model):
 
     def __str__(self):
         return f"{self.update_name} ({self.address})"
-
-# your_app/models.py
-from django.db import models
-# from django.contrib.auth.models import User
-from django.utils import timezone
-import datetime
 
 class ExpiringToken(models.Model):
     key = models.CharField(max_length=40, primary_key=True)
