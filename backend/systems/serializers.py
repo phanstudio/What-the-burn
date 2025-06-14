@@ -25,7 +25,7 @@ class UpdateRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Wallet address is not registered.")
         return address
 
-    def validate_transaction_hash(self, tx_hash):
+    def validate_transaction_hash(self, tx_hash): # will have to disable the thing
         try:
             tx = w3.eth.get_transaction(tx_hash)
         except Exception:
