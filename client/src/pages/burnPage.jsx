@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import NFTSelect from '../components/burnPage/SelectNFTs';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import DragAndDropFileInput from '../components/burnPage/dragNdrop';
+import Selector from '../components/burnPage/SelectNFTs';
+import TextArea from '../components/burnPage/TextArea';
 
 function BurnPage() {
     const { address, isConnected } = useAccount();
@@ -43,17 +44,23 @@ function BurnPage() {
     }, [jwt]);
 
     return (
-        <div className="p-6 bg-gray-900 min-h-screen text-white">
+        <div className="p-6 bg-emerald-950 min-h-screen text-white">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">Burn NFTs</h1>
-                <ConnectButton />
+
             </div>
 
             <p className="mb-4">
                 Connected Wallet: <span className="font-mono text-emerald-400">{address}</span>
             </p>
 
-            <NFTSelect nfts={nfts} />
+            <Selector nfts={nfts} />
+            < DragAndDropFileInput />
+            <TextArea />
+
+
+            {/* Burn them all */}
+            <button className=' bg-emerald-500 hover:bg-cyan-500 transition p-2 w-32 rounded-md ml-140 mt-2'>Burn</button>
         </div>
     );
 }
