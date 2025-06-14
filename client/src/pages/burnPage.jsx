@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NFTSelect from '../components/burnPage/SelectNFTs';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import NFTMultiSelect from '../components/burnPage/MultipleNft';
 
 function BurnPage() {
     const { address, isConnected } = useAccount();
@@ -46,7 +47,7 @@ function BurnPage() {
         <div className="p-6 bg-gray-900 min-h-screen text-white">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">Burn NFTs</h1>
-                <ConnectButton />
+
             </div>
 
             <p className="mb-4">
@@ -54,6 +55,7 @@ function BurnPage() {
             </p>
 
             <NFTSelect nfts={nfts} />
+
         </div>
     );
 }
