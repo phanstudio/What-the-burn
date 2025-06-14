@@ -97,7 +97,7 @@ class Gettokens(APIView): # remove an error this
         # user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
         
-        tokens = self.tokens_owned(wallet, img_url.url)#user.address, img_url.url)
+        tokens = self.tokens_owned(wallet, img_url.url)#user.address)
 
         return Response({
             "tokens": tokens
