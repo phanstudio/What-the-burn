@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import axios from 'axios';
