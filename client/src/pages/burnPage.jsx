@@ -1,16 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DragAndDropFileInput from '../components/burnPage/dragNdrop';
 import Selector from '../components/burnPage/SelectNFTs';
 import TextArea from '../components/burnPage/TextArea';
+import { useAccount, useWalletClient } from 'wagmi';
+import { ethers } from 'ethers';
+import { disconnect } from '@wagmi/core'
+import { config } from '../utils/wagmi'
+
+const nft_address = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+const nft_abi = [
+    "function symbol() public view returns (string)",
+    "function setApprovalForAll(address operator, bool approved)",
+    "function isApprovedForAll(address owner, address operator) view returns (bool)",
+];
+
+const CONTRACT_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+const CONTRACT_ABI = [
+    "function createPremium(uint32[] tokenIds, uint32 update_id)"
+];
+
 
 function BurnPage() {
     const { address, isConnected } = useAccount();
     const [nfts, setNfts] = useState([]);
     const navigate = useNavigate();
     const jwt = sessionStorage.getItem('jwt');
+    const { data: walletClient } = useWalletClient();
 
     // 🚨 Redirect to "/" if wallet disconnects
     useEffect(() => {
@@ -28,7 +45,6 @@ function BurnPage() {
                 console.log(jwt)
                 const response = await axios.get(
                     `https://what-the-burn-backend-phanstudios-projects.vercel.app/user-tokens/?wallet=0xA9A5d352B6F388583A850803e297865A499f630B`,//${address}`, 
-                    // `http://localhost:8000/user-tokens/?wallet=${address}`, 
                     {
                         headers: {
                             Authorization: `Token ${jwt}`

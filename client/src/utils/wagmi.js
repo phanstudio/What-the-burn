@@ -2,6 +2,7 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import {
   mainnet,
+  seiDevnet,
 } from 'wagmi/chains';
 import { defineChain } from 'viem';
 
@@ -31,7 +32,7 @@ const hyperEVM = defineChain({
 export const config = getDefaultConfig({
   appName: 'What the burn?',
   projectId: '5379c9e3bf58798f600c7cd162a5120f',
-  chains: [hyperEVM, mainnet],
+  chains: [hyperEVM, mainnet, seiDevnet],
   ssr: false, // If your dApp uses server side rendering (SSR)
 });
 
