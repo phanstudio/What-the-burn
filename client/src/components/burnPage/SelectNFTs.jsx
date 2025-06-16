@@ -105,7 +105,7 @@ const NFTMultiSelect = ({
             <button
                 onClick={toggleDropdown}
                 disabled={disabled}
-                className={`w-full flex items-center justify-between p-3 border rounded-lg bg-teal-400 transition-all duration-200 ${disabled
+                className={`w-full flex items-center justify-between p-3 border rounded-lg bg-transparent transition-all duration-200 ${disabled
                     ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                     : 'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
                     }`}
@@ -125,10 +125,10 @@ const NFTMultiSelect = ({
                                 </div>
                             )}
                             <div className="text-left min-w-0 flex-1">
-                                <div className="font-medium text-gray-900 truncate">
+                                <div className="font-medium text-[#50D2C1] truncate">
                                     {getDisplayText()}
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-[#50D2C1]">
                                     {selectedNFTs.length} selected
                                 </div>
                             </div>
@@ -319,7 +319,7 @@ const NFTSelect = ({
             <button
                 onClick={toggleDropdown}
                 disabled={disabled}
-                className={`w-full flex items-center justify-between p-3 border rounded-lg bg-white transition-all duration-200 ${disabled
+                className={`w-full flex items-center justify-between p-3 border rounded-lg bg-transparent transition-all duration-200 ${disabled
                     ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                     : 'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     }`}
@@ -430,14 +430,14 @@ const Selector = ({
     const unavailableForSingle = multipleSelection;
 
     return (
-        <div className="p-8 space-y-8 bg-emerald-950 h-auto">
-            <div className="max-w-2xl mx-auto space-y-6">
+        <div className="space-y-8 bg-inherit h-auto">
+            <div className=" mx-auto space-y-6">
                 <h1 className="text-2xl font-bold text-white">Select NFTs</h1>
 
 
                 {/* Multiple Select */}
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-800">Multiple Select (Max 10)</h2>
+                <div className="bg-transparent border border-[#50D2C1] p-6 rounded-lg shadow">
+                    <h2 className="text-lg font-semibold mb-4 text-[#50D2C1]">Multiple Select (Max 10)</h2>
                     <NFTMultiSelect
                         nfts={nfts}
                         maxSelections={10}
@@ -458,8 +458,8 @@ const Selector = ({
                 </div>
 
                 {/* Single Select */}
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-800">Single Select</h2>
+                <div className="bg-transparent border border-[#50D2C1]  p-6 rounded-lg shadow">
+                    <h2 className="text-lg font-semibold mb-4 text-[#50D2C1]">Single Select</h2>
                     <NFTSelect
                         nfts={nfts}
                         onSelect={setSingleSelection}

@@ -85,10 +85,8 @@ function LandingPage() {
     };
 
     return (
-        <div className='h-screen flex flex-col items-center justify-center w-full bg-emerald-950 gap-6'>
-            <h1 className="text-4xl font-bold text-white mb-8">Welcome to Your dApp</h1>
-
-
+        <div className='h-screen flex flex-col items-center justify-center w-full bg-[#0F1A1F] gap-6'>
+            <h1 className=" text-lg md:text-2xl lg:text-4xl font-bold text-white mb-8">Welcome to Your dApp</h1>
 
             {isConnected && (
                 <>

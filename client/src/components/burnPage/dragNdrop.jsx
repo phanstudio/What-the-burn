@@ -46,13 +46,13 @@ const DragAndDropFileInput = ({
     };
 
     return (
-        <div className="space-y-4 w-lg justify-self-center">
+        <div className="space-y-4 w-full  justify-self-center">
             <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={clickFunction}
-                className={`border-2 border-dashed rounded-2xl p-10 text-center transition ${dragging ? "border-teal-700 bg-teal-50" : "border-custom-light-purple"
+                className={`border-2 border-dashed rounded-2xl p-10 text-center transition ${dragging ? "border-teal-700 bg-teal-50" : "border-[#50D2C1]"
                     } cursor-pointer`}
             >
                 {!clickFunction && (
@@ -103,7 +103,7 @@ const DragAndDropFileInput = ({
                     {selectedFiles.map((file, index) => (
                         <div
                             key={index}
-                            className="flex items-center justify-between bg-gray-100 p-3 rounded-lg"
+                            className="flex items-center justify-between bg-inherit border border-[#50D2C1] p-3 rounded-lg"
                         >
                             <div className="flex items-center space-x-3">
                                 <svg
@@ -119,7 +119,7 @@ const DragAndDropFileInput = ({
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                     />
                                 </svg>
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-[#50D2C1]">
                                     {file.name} ({(file.size / 1024).toFixed(1)} KB)
                                 </span>
                             </div>
