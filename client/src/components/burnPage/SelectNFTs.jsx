@@ -430,7 +430,7 @@ const Selector = ({
     const unavailableForSingle = multipleSelection;
 
     return (
-        <div className="p-8 space-y-8 bg-emerald-950 h-auto">
+        <div className="p-8 space-y-8 bg-[#00000000] h-auto">
             <div className="max-w-2xl mx-auto space-y-6">
                 <h1 className="text-2xl font-bold text-white">Select NFTs</h1>
 
