@@ -13,10 +13,9 @@ export default function Header() {
 				{/* Logo and Toggle */}
 				<div className='flex items-center justify-between w-full md:w-auto'>
 					<Link to={'/'}>
-						<div className='flex items-center space-x-2'>
-							<h1>what duh burn</h1>
-							{/* <span className='text-xl font-bold'>Notty Terminal</span> */}
-						</div>
+						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#02c74d] to-[#0de7ff] bg-clip-text text-transparent'>
+							What the Burn
+						</h2>
 						{/* <span className='text-2xl font-bold bg-gradient-to-r from-[#a4b9fa] to-[#4a0a80] bg-clip-text text-transparent'>
 							Notty Terminal
 							

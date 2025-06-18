@@ -68,9 +68,7 @@ function BurnPage() {
                     <h1 className="text-3xl font-bold">Burn NFTs</h1>
                 </div>
 
-                <p className="mb-4">
-                    Connected Wallet: <span className="font-mono text-wrap text-emerald-400">{address}</span>
-                </p>
+
             </div>
             <div className=" flex flex-col mx-auto w-full max-w-3xl bg-[#1A2429] p-6 rounded-lg shadow-lg">
 
