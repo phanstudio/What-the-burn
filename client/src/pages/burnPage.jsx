@@ -51,40 +51,15 @@ function BurnPage() {
                         }
                     });
                 setNfts(response.data.tokens);
-            } catch (err) { 
-                if (err.response && err.response.status === 403) {
-                    // Handle 403 Forbidden error
-                    console.log('403 Forbidden: Access denied');
-                    await disconnect(config); 
-                } else {
-                    // Handle other errors
-                    console.error('❌ Failed to fetch NFTs:', err);
-                }
+            } catch (err) {
+                console.error('❌ Failed to fetch NFTs:', err);
             }
         };
+
+        console.log(nfts)
+
         fetchNFTs();
     }, [jwt]);
-
-    const callContract = async () => {
-        if (!isConnected || !walletClient) return;
-        try {
-            
-            const provider = new ethers.BrowserProvider(walletClient.transport);
-            const signer = await provider.getSigner();
-
-            const contract1 = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-            const contract2 = new ethers.Contract(nft_address, nft_abi, signer);
-            
-            // check first
-            // await contract2.setApprovalForAll(CONTRACT_ADDRESS, true)
-            await contract1.createPremium([...Array(10)].map((_, i) => i + 2), 2)
-            // console.log("📞 Calling symbol()...");
-            // const result = await contract.symbol();
-            // console.log("✅ symbol():", result);
-        } catch (error) {
-            console.error("❌ Contract call failed:", error);
-        }
-    };
 
     return (
         <div className="p-6 flex flex-col bg-[#0F1A1F] min-h-screen text-white">
@@ -93,7 +68,9 @@ function BurnPage() {
                     <h1 className="text-3xl font-bold">Burn NFTs</h1>
                 </div>
 
-
+                <p className="mb-4">
+                    Connected Wallet: <span className="font-mono text-wrap text-emerald-400">{address}</span>
+                </p>
             </div>
             <div className=" flex flex-col mx-auto w-full max-w-3xl bg-[#1A2429] p-6 rounded-lg shadow-lg">
 
@@ -105,12 +82,7 @@ function BurnPage() {
 
 
                     {/* Burn them all */}
-                    <button 
-                        onClick={callContract}
-                        className=' bg-emerald-500 hover:bg-cyan-500 transition p-2 w-32 rounded-md ml-140 mt-2'
-                        >
-                            Burn
-                    </button>
+                    <button className=' bg-[#50D2C1] hover:bg-cyan-500 transition-all p-2 w-32 rounded-md  mt-2'>Burn</button>
                 </div>
             </div>
         </div>

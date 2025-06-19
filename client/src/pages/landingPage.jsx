@@ -105,8 +105,8 @@ function LandingPage() {
                             onClick={connectAndValidate}
                             disabled={isLoading}
                             className={`mt-4 px-6 py-3 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-3 ${isLoading
-                                    ? 'bg-blue-400 cursor-not-allowed'
-                                    : 'bg-blue-500 hover:bg-blue-600 hover:scale-105'
+                                ? 'bg-blue-400 cursor-not-allowed'
+                                : 'bg-blue-500 hover:bg-blue-600 hover:scale-105'
                                 }`}
                         >
                             {isLoading && (
