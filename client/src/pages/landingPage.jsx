@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import axios from 'axios';
 import WalletSignaturePopup from '../components/LandingPage/WalletPopUp';
 
+
 const CONTRACT_ADDRESS = '0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const CONTRACT_ABI = [
     "function symbol() public view returns (string)"
@@ -23,6 +24,9 @@ function LandingPage() {
             setJwt(null);
         }
     }, [isConnected]);
+
+
+
 
     const connectAndValidate = async () => {
         if (!walletClient || !isConnected) return;
@@ -132,7 +136,8 @@ function LandingPage() {
             </Link>
 
             {/* Wallet Signature Popup */}
-            {showPopup && <WalletSignaturePopup onClose={handlePopupClose} />}
+            {showPopup && <WalletSignaturePopup onClose={handlePopupClose} />
+            }
         </div>
     );
 }

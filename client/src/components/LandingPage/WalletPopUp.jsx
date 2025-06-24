@@ -9,9 +9,10 @@ const WalletSignaturePopup = ({ onClose }) => {
     };
 
     const rejectSignature = () => {
-        console.log('Transaction rejected by user');
-        closePopup();
-    };
+        if (reject) {
+            rejectSignature()
+        }
+    }
 
     const approveSignature = () => {
         setIsSigning(true);
