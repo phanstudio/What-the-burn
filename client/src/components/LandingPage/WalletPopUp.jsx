@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
 
-const WalletSignaturePopup = ({ onClose }) => {
+const WalletSignaturePopup = ({ onClose, onapprove}) => {
     const [isSigning, setIsSigning] = useState(false);
     const [signed, setSigned] = useState(false);
 
-    const closePopup = () => {
-        if (onClose) onClose();
+    const closePopup = (shouldDisconnect = true) => {
+        if (onClose) onClose(shouldDisconnect);
     };
 
-    const rejectSignature = () => {
-        if (reject) {
-            rejectSignature()
-        }
+    const approveSign = async () => {
+        if (onapprove) await onapprove();
     }
 
-    const approveSignature = () => {
+    const rejectSignature = () => {
+        console.log('Transaction rejected by user');
+        closePopup();
+    }
+
+    const approveSignature = async() => {
         setIsSigning(true);
+        await approveSign();
+        setSigned(true);
         setTimeout(() => {
-            setSigned(true);
-            setTimeout(() => {
-                closePopup();
-            }, 1500);
-        }, 2000);
+            closePopup(false);
+        }, 1500);
     };
 
     useEffect(() => {
