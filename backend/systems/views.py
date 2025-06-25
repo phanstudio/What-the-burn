@@ -55,6 +55,7 @@ class GetSignMessageView(APIView):
 
 class VerifySignatureView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []  # Explicitly remove SessionAuthentication
     def post(self, request):
         serializer = SignatureVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
