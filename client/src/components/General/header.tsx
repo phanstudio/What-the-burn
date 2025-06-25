@@ -8,17 +8,18 @@ export default function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<header className=' bg-emerald-950 border-b-2 border-gray-600 text-white px-4 py-3 shadow-md'>
+		<header className=' bg-[#0F1A1F] border-b-2 border-gray-600 text-white px-4 py-3 shadow-md'>
 			<div className='max-w-7xl mx-auto flex items-center justify-between'>
 				{/* Logo and Toggle */}
 				<div className='flex items-center justify-between w-full md:w-auto'>
 					<Link to={'/'}>
-						<div className='flex items-center space-x-2'>
-							<h1>what duh burn</h1>
-							{/* <span className='text-xl font-bold'>Notty Terminal</span> */}
-						</div>
+						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#02c74d] to-[#0de7ff] bg-clip-text text-transparent'>
+							What the Burn
+						</h2>
 						{/* <span className='text-2xl font-bold bg-gradient-to-r from-[#a4b9fa] to-[#4a0a80] bg-clip-text text-transparent'>
 							Notty Terminal
+							
+
 						</span> */}
 					</Link>
 					{/* Mobile toggle */}
@@ -35,7 +36,10 @@ export default function Header() {
 				</div>
 
 				{/* Desktop Navigation links */}
-				<ConnectButton />
+				<div className="hidden md:flex">
+					<ConnectButton />
+				</div>
+
 
 				{/* Right icons + button */}
 			</div>
@@ -51,6 +55,7 @@ export default function Header() {
 							<Bell className='w-5 h-5 text-gray-300 hover:text-white cursor-pointer' />
 							<span className='absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500' />
 						</div> */}
+
 						{/* <MessageSquare className='w-5 h-5 text-gray-300 hover:text-white cursor-pointer' /> */}
 
 					</div>

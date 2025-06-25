@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Image, X, Check, AlertCircle } from 'lucide-react';
+
 // Multiple Select NFT Component
 const NFTMultiSelect = ({
     nfts = [],
@@ -10,10 +11,12 @@ const NFTMultiSelect = ({
     disabled = false,
     unavailableNFTs = [],
     error = null,
-    required = false
+    required = false,
+    minSelections = 0,
+    value = []
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedNFTs, setSelectedNFTs] = useState([]);
+    const [selectedNFTs, setSelectedNFTs] = useState(value || []);
     const [localError, setLocalError] = useState('');
     const dropdownRef = useRef(null);
 
@@ -32,12 +35,23 @@ const NFTMultiSelect = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen]);
 
+    // Update selected NFTs when value prop changes
+    useEffect(() => {
+        setSelectedNFTs(value || []);
+    }, [value]);
+
     // Validate selection
     const validateSelection = (selection) => {
         if (required && (!selection || selection.length === 0)) {
             setLocalError('Please select at least one NFT');
             return false;
         }
+
+        if (minSelections && selection.length < minSelections) {
+            setLocalError(`Please select at least ${minSelections} NFTs (currently ${selection.length} selected)`);
+            return false;
+        }
+
         setLocalError('');
         return true;
     };
@@ -105,11 +119,17 @@ const NFTMultiSelect = ({
         { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
         { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
         { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" }
+        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" },
+        { id: "6", name: "Mystic NFT #6", image: "https://via.placeholder.com/40x40/ef4444/white?text=6" },
+        { id: "7", name: "Dragon NFT #7", image: "https://via.placeholder.com/40x40/3b82f6/white?text=7" },
+        { id: "8", name: "Phoenix NFT #8", image: "https://via.placeholder.com/40x40/f97316/white?text=8" },
+        { id: "9", name: "Unicorn NFT #9", image: "https://via.placeholder.com/40x40/06b6d4/white?text=9" },
+        { id: "10", name: "Griffin NFT #10", image: "https://via.placeholder.com/40x40/84cc16/white?text=10" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;
     const hasError = error || localError;
+    const isMinimumMet = selectedNFTs.length >= minSelections;
 
     return (
         <div className={`relative w-full max-w-md ${className}`} ref={dropdownRef}>
@@ -139,11 +159,11 @@ const NFTMultiSelect = ({
                                 </div>
                             )}
                             <div className="text-left min-w-0 flex-1">
-                                <div className="font-medium text-[#50D2C1] truncate">
+                                <div className={`font-medium truncate ${isMinimumMet ? 'text-gray-900' : 'text-orange-500'}`}>
                                     {getDisplayText()}
                                 </div>
-                                <div className="text-sm text-[#50D2C1]">
-                                    {selectedNFTs.length} selected
+                                <div className={`text-sm ${isMinimumMet ? 'text-gray-500' : 'text-orange-500'}`}>
+                                    {selectedNFTs.length} selected {!isMinimumMet && minSelections > 0 && `(need ${minSelections - selectedNFTs.length} more)`}
                                 </div>
                             </div>
                         </>
@@ -172,18 +192,40 @@ const NFTMultiSelect = ({
                 </p>
             )}
 
+            {/* Progress Indicator */}
+            {minSelections > 0 && selectedNFTs.length > 0 && selectedNFTs.length < minSelections && (
+                <div className="mt-2 mb-2">
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Progress to minimum</span>
+                        <span>{selectedNFTs.length}/{minSelections}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min((selectedNFTs.length / minSelections) * 100, 100)}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
+
             {/* Selected Tags */}
             {selectedNFTs.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                     {selectedNFTs.map((nft) => (
                         <div
                             key={nft.id}
-                            className="flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                            className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${isMinimumMet
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-orange-100 text-orange-800'
+                                }`}
                         >
                             <span className="truncate max-w-24">{nft.name}</span>
                             <button
                                 onClick={(e) => removeNFT(nft, e)}
-                                className="hover:bg-blue-200 rounded-full p-0.5"
+                                className={`rounded-full p-0.5 ${isMinimumMet
+                                    ? 'hover:bg-blue-200'
+                                    : 'hover:bg-orange-200'
+                                    }`}
                                 disabled={disabled}
                             >
                                 <X size={12} />
@@ -203,14 +245,22 @@ const NFTMultiSelect = ({
                         </div>
                     ) : (
                         <>
-                            {maxSelections && (
-                                <div className="p-2 text-xs text-gray-500 bg-gray-50 border-b">
-                                    {selectedNFTs.length}/{maxSelections} selected
-                                    {selectedNFTs.length >= maxSelections && (
-                                        <span className="text-red-500 ml-2">Limit reached</span>
+                            <div className="p-2 text-xs bg-gray-50 border-b">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500">
+                                        {selectedNFTs.length} selected
+                                        {maxSelections && ` / ${maxSelections} max`}
+                                    </span>
+                                    {minSelections > 0 && (
+                                        <span className={`font-medium ${isMinimumMet ? 'text-green-600' : 'text-orange-600'}`}>
+                                            {isMinimumMet ? '✓ Minimum met' : `Need ${minSelections - selectedNFTs.length} more`}
+                                        </span>
                                     )}
                                 </div>
-                            )}
+                                {maxSelections && selectedNFTs.length >= maxSelections && (
+                                    <span className="text-red-500 ml-2">Limit reached</span>
+                                )}
+                            </div>
                             {nftList.map((nft) => {
                                 const selected = isSelected(nft);
                                 const unavailable = isUnavailable(nft);
@@ -236,7 +286,7 @@ const NFTMultiSelect = ({
                                                 ? 'bg-blue-500 border-blue-500'
                                                 : 'border-gray-300'
                                             }`}>
-                                            {selected && <Check size={14} className="text-white" />}
+                                            {selected && <Check size={14} className="text-[#50D2C1]" />}
                                             {unavailable && <X size={14} className="text-red-600" />}
                                         </div>
 
@@ -286,23 +336,20 @@ const NFTMultiSelect = ({
 const NFTSelect = ({
     nfts = [],
     onSelect,
-    placeholder = "Select an NFT",
+    placeholder = "Select NFT",
     className = "",
-    value = null,
     disabled = false,
     unavailableNFTs = [],
     error = null,
-    required = false
+    required = false,
+    value = null
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFT, setSelectedNFT] = useState(value);
     const [localError, setLocalError] = useState('');
     const dropdownRef = useRef(null);
 
-    useEffect(() => {
-        setSelectedNFT(value);
-    }, [value]);
-
+    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -317,18 +364,28 @@ const NFTSelect = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen]);
 
+    // Update selected NFT when value prop changes
+    useEffect(() => {
+        setSelectedNFT(value);
+    }, [value]);
+
+    // Validate selection
     const validateSelection = (selection) => {
         if (required && !selection) {
             setLocalError('Please select an NFT');
             return false;
         }
+
         setLocalError('');
         return true;
     };
 
-    const handleSelect = (nft) => {
-        const isUnavailable = unavailableNFTs.some(unavailable => unavailable.id === nft.id);
-        if (isUnavailable) return;
+    const isUnavailable = (nft) => {
+        return unavailableNFTs.some(unavailable => unavailable.id === nft.id);
+    };
+
+    const handleNFTClick = (nft) => {
+        if (isUnavailable(nft)) return;
 
         setSelectedNFT(nft);
         setIsOpen(false);
@@ -336,6 +393,16 @@ const NFTSelect = ({
 
         if (onSelect) {
             onSelect(nft);
+        }
+    };
+
+    const clearSelection = (e) => {
+        e.stopPropagation();
+        setSelectedNFT(null);
+        validateSelection(null);
+
+        if (onSelect) {
+            onSelect(null);
         }
     };
 
@@ -358,7 +425,7 @@ const NFTSelect = ({
 
     return (
         <div className={`relative w-full ${className}`} ref={dropdownRef}>
-            {/* Select Button */}
+            {/* Main Select Button */}
             <button
                 onClick={toggleDropdown}
                 disabled={disabled}
@@ -366,7 +433,7 @@ const NFTSelect = ({
                     ? 'border-red-400 focus:ring-red-500'
                     : disabled
                         ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                        : 'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                        : 'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
                     }`}
             >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -376,31 +443,43 @@ const NFTSelect = ({
                                 <img
                                     src={selectedNFT.image}
                                     alt={selectedNFT.name}
-                                    className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                                    className="w-8 h-8 rounded-md object-cover"
                                 />
                             ) : (
-                                <div className="w-8 h-8 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
+                                <div className="w-8 h-8 bg-gray-200 rounded-md flex items-center justify-center">
                                     <Image size={16} className="text-gray-400" />
                                 </div>
                             )}
                             <div className="text-left min-w-0 flex-1">
-                                <div className="font-medium text-gray-900 truncate">{selectedNFT.name}</div>
-                                <div className="text-sm text-gray-500">ID: {selectedNFT.id}</div>
+                                <div className="font-medium text-gray-900 truncate">
+                                    {selectedNFT.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                    ID: {selectedNFT.id}
+                                </div>
                             </div>
                         </>
                     ) : (
-                        <span className={hasError ? "text-red-400" : disabled ? 'text-gray-400' : 'text-gray-500'}>
+                        <span className={hasError ? "text-red-400" : "text-gray-500"}>
                             {placeholder}
                             {required && <span className="text-red-400 ml-1">*</span>}
                         </span>
                     )}
                 </div>
                 <div className="flex items-center space-x-2">
+                    {selectedNFT && !disabled && (
+                        <button
+                            onClick={clearSelection}
+                            className="p-1 hover:bg-gray-100 rounded-full"
+                        >
+                            <X size={16} className="text-gray-400" />
+                        </button>
+                    )}
                     {hasError && <AlertCircle size={16} className="text-red-400" />}
                     <ChevronDown
                         size={20}
-                        className={`transition-transform duration-200 flex-shrink-0 ${disabled ? 'text-gray-300' : hasError ? 'text-red-400' : 'text-gray-400'
-                            } ${isOpen ? 'rotate-180' : ''}`}
+                        className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${disabled ? 'text-gray-300' : hasError ? 'text-red-400' : 'text-gray-400'
+                            }`}
                     />
                 </div>
             </button>
@@ -413,7 +492,7 @@ const NFTSelect = ({
                 </p>
             )}
 
-            {/* Dropdown Menu */}
+            {/* Dropdown */}
             {isOpen && !disabled && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {nftList.length === 0 ? (
@@ -423,43 +502,62 @@ const NFTSelect = ({
                         </div>
                     ) : (
                         nftList.map((nft) => {
-                            const isUnavailable = unavailableNFTs.some(unavailable => unavailable.id === nft.id);
+                            const selected = selectedNFT?.id === nft.id;
+                            const unavailable = isUnavailable(nft);
 
                             return (
                                 <button
                                     key={nft.id}
-                                    onClick={() => handleSelect(nft)}
-                                    disabled={isUnavailable}
-                                    className={`w-full flex items-center space-x-3 p-3 focus:outline-none transition-colors duration-150 border-b border-gray-100 last:border-b-0 text-left ${isUnavailable
+                                    onClick={() => handleNFTClick(nft)}
+                                    disabled={unavailable}
+                                    className={`w-full flex items-center space-x-3 p-3 text-left transition-colors border-b border-gray-100 last:border-b-0 ${unavailable
                                         ? 'bg-red-50 opacity-60 cursor-not-allowed'
-                                        : 'hover:bg-gray-50 focus:bg-gray-50'
+                                        : selected
+                                            ? 'bg-blue-50 hover:bg-blue-100'
+                                            : 'hover:bg-gray-50'
                                         }`}
                                 >
+                                    <div className={`w-5 h-5 border-2 rounded-full flex items-center justify-center ${unavailable
+                                        ? 'bg-red-200 border-red-300'
+                                        : selected
+                                            ? 'bg-blue-500 border-blue-500'
+                                            : 'border-gray-300'
+                                        }`}>
+                                        {selected && <div className="w-2 h-2 bg-white rounded-full" />}
+                                        {unavailable && <X size={14} className="text-red-600" />}
+                                    </div>
+
                                     {nft.image ? (
                                         <img
                                             src={nft.image}
                                             alt={nft.name}
-                                            className={`w-10 h-10 rounded-md object-cover flex-shrink-0 ${isUnavailable ? 'grayscale' : ''}`}
+                                            className={`w-10 h-10 rounded-md object-cover ${unavailable ? 'grayscale' : ''}`}
                                         />
                                     ) : (
-                                        <div className={`w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0 ${isUnavailable ? 'grayscale' : ''}`}>
-                                            <Image size={18} className="text-gray-400" />
+                                        <div className={`w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center ${unavailable ? 'grayscale' : ''}`}>
+                                            <Image size={18} className="text-[#50D2C1]" />
                                         </div>
                                     )}
+
                                     <div className="flex-1 min-w-0">
-                                        <div className={`font-medium truncate flex items-center gap-2 ${isUnavailable ? 'text-red-600' : 'text-gray-900'
+                                        <div className={`font-medium truncate flex items-center gap-2 ${unavailable
+                                            ? 'text-red-600'
+                                            : selected
+                                                ? 'text-blue-900'
+                                                : 'text-gray-900'
                                             }`}>
                                             {nft.name}
-                                            {isUnavailable && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Unavailable</span>}
+                                            {unavailable && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Unavailable</span>}
                                         </div>
-                                        <div className={`text-sm ${isUnavailable ? 'text-red-500' : 'text-gray-500'
+                                        <div className={`text-sm ${unavailable
+                                            ? 'text-red-500'
+                                            : selected
+                                                ? 'text-blue-700'
+                                                : 'text-gray-500'
                                             }`}>
                                             ID: {nft.id}
                                         </div>
                                     </div>
-                                    {isUnavailable && (
-                                        <X size={16} className="text-red-500 flex-shrink-0" />
-                                    )}
                                 </button>
                             );
                         })
@@ -470,170 +568,102 @@ const NFTSelect = ({
     );
 };
 
-// Demo Selector Component
-const Selector = forwardRef(({
-    nfts = [],
-    onSelect,
-    placeholder = "Select NFTs",
-    className = "",
-    maxSelections = null,
-    disabled = false,
-    unavailableNFTs = [],
-    error = null
-}, ref) => {
-    const [multipleSelection, setMultipleSelection] = useState([]);
-    const [singleSelection, setSingleSelection] = useState(null);
-    const [validationErrors, setValidationErrors] = useState({});
 
-    // Validate both selections
-    const validateSelections = () => {
-        const errors = {};
 
-        if (multipleSelection.length === 0) {
-            errors.multiple = 'Please select at least one NFT for burning';
-        }
-
-        if (!singleSelection) {
-            errors.single = 'Please select a featured NFT';
-        }
-
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
-
-    // Handle multiple selection change
-    const handleMultipleSelection = (selection) => {
-        setMultipleSelection(selection);
-
-        if (selection.length > 0 && validationErrors.multiple) {
-            setValidationErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors.multiple;
-                return newErrors;
-            });
-        }
-
-        if (onSelect) {
-            onSelect({
-                multiple: selection,
-                single: singleSelection,
-                isValid: selection.length > 0 && singleSelection !== null
-            });
-        }
-    };
-
-    // Handle single selection change
-    const handleSingleSelection = (selection) => {
-        setSingleSelection(selection);
-
-        if (selection && validationErrors.single) {
-            setValidationErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors.single;
-                return newErrors;
-            });
-        }
-
-        if (onSelect) {
-            onSelect({
-                multiple: multipleSelection,
-                single: selection,
-                isValid: multipleSelection.length > 0 && selection !== null
-            });
-        }
-    };
-
-    // Create unavailable lists
-    const unavailableForMultiple = singleSelection ? [singleSelection, ...unavailableNFTs] : unavailableNFTs;
-    const unavailableForSingle = [...multipleSelection, ...unavailableNFTs];
-
-    // Expose validation and data retrieval via ref
-    useImperativeHandle(ref, () => ({
-        validate: validateSelections,
-        getSelections: () => ({
-            multiple: multipleSelection,
-            single: singleSelection
-        })
-    }));
+// Selector Component showing both selectors
+const Selector = (
+    {
+        nfts = [],
+        onSelect,
+        placeholder = "Select NFT",
+        className = "",
+        disabled = false,
+        unavailableNFTs = [],
+        error = null,
+        required = false,
+        value = null
+    }
+) => {
+    const [selectedNFT, setSelectedNFT] = useState(null);
+    const [selectedNFTs, setSelectedNFTs] = useState([]);
 
     return (
-        <div className="space-y-8 bg-[0000] h-auto">
-            <div className="mx-auto space-y-6">
-                <h1 className="text-2xl font-bold text-white">Select NFTs</h1>
+        <div className="p-8  mx-auto space-y-8">
+            <h1 className="text-3xl font-bold text-[#50D2C1] text-center">NFT Selector Components</h1>
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center gap-2">
-                        <AlertCircle size={20} />
-                        <span>{error}</span>
-                    </div>
-                )}
+            {/* Multiple Select Selector */}
+            <div className="bg-inherit p-6 rounded-lg border">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">Multiple NFT Select (Min: 10, Max: 15)</h2>
 
-                <div className="bg-transparent border border-[#50D2C1] p-6 rounded-lg shadow">
-                    <h2 className="text-lg font-semibold mb-4 text-[#50D2C1]">
-                        Multiple Select (Max {maxSelections || 10})
-                        <span className="text-red-400 ml-1">*</span>
-                    </h2>
-                    <NFTMultiSelect
-                        nfts={nfts}
-                        maxSelections={maxSelections || 10}
-                        onSelect={handleMultipleSelection}
-                        placeholder="Choose multiple NFTs to burn..."
-                        unavailableNFTs={unavailableForMultiple}
-                        error={validationErrors.multiple}
-                        required={true}
-                    />
-                </div>
+                <NFTMultiSelect
+                    nfts={nfts}
+                    onSelect={setSelectedNFTs}
+                    placeholder="Select 10-15 NFTs"
+                    className="mb-4"
+                    minSelections={10}
+                    maxSelections={15}
+                    required={true}
+                    value={selectedNFTs}
+                />
 
-                <div className="bg-transparent border border-[#50D2C1] p-6 rounded-lg shadow">
-                    <h2 className="text-lg font-semibold mb-4 text-[#50D2C1]">
-                        Featured NFT Selection
-                        <span className="text-red-400 ml-1">*</span>
-                    </h2>
-                    <NFTSelect
-                        nfts={nfts}
-                        onSelect={handleSingleSelection}
-                        placeholder="Choose a featured NFT..."
-                        className="max-w-md"
-                        unavailableNFTs={unavailableForSingle}
-                        error={validationErrors.single}
-                        required={true}
-                    />
-                </div>
-
-                {(multipleSelection.length > 0 || singleSelection) && (
-                    <div className="bg-[#0F1A1F] border border-[#50D2C1] p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-[#50D2C1]">Selection Summary</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="text-white mb-2">NFTs to Burn:
-                                    <span className={`ml-2 font-semibold ${multipleSelection.length > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                        {multipleSelection.length}
-                                    </span>
-                                </p>
-                                <p className="text-white">Featured NFT:
-                                    <span className={`ml-2 font-semibold ${singleSelection ? 'text-green-400' : 'text-red-400'}`}>
-                                        {singleSelection ? 'Selected' : 'Not Selected'}
-                                    </span>
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-white">Total Selection:
-                                    <span className="ml-2 font-semibold text-[#50D2C1]">
-                                        {multipleSelection.length + (singleSelection ? 1 : 0)} NFTs
-                                    </span>
-                                </p>
-                                <p className="text-white">Status:
-                                    <span className={`ml-2 font-semibold ${multipleSelection.length > 0 && singleSelection ? 'text-green-400' : 'text-yellow-400'}`}>
-                                        {multipleSelection.length > 0 && singleSelection ? 'Ready' : 'Incomplete'}
-                                    </span>
-                                </p>
-                            </div>
+                <div className="mt-4 p-4 bg-inherit rounded-lg">
+                    <h3 className="font-semibold mb-2">Selected NFTs ({selectedNFTs.length}):</h3>
+                    {selectedNFTs.length === 0 ? (
+                        <p className="text-gray-500">No NFTs selected</p>
+                    ) : (
+                        <div className="space-y-1">
+                            {selectedNFTs.map((nft) => (
+                                <div key={nft.id} className="text-sm">
+                                    • {nft.name} (ID: {nft.id})
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {selectedNFTs.length > 0 && selectedNFTs.length < 3 && (
+                        <div className="mt-3 p-2 bg-orange-100 border border-orange-200 rounded text-orange-800 text-sm">
+                            ⚠️ You need to select at least 10 NFTs. Currently selected: {selectedNFTs.length}
+                        </div>
+                    )}
+
+                    {selectedNFTs.length >= 10 && (
+                        <div className="mt-3 p-2 bg-green-100 border border-green-200 rounded text-green-800 text-sm">
+                            ✅ Minimum requirement met! You have selected {selectedNFTs.length} NFTs.
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Single Select Selector */}
+            <div className="bg-inherit p-6 rounded-lg border border-[#50D2C1]">
+                <h2 className="text-xl font-semibold mb-4 text-[#50D2C1]">Single NFT Select</h2>
+
+                <NFTSelect
+                    nfts={nfts}
+                    onSelect={setSelectedNFT}
+                    placeholder="Choose one NFT"
+                    className="mb-4"
+                    required={true}
+                    value={selectedNFT}
+                />
+
+                <div className="mt-4 p-4 bg-inherit rounded-lg">
+                    <h3 className="font-semibold mb-2">Selected NFT:</h3>
+                    {selectedNFT ? (
+                        <div className="text-sm">
+                            • {selectedNFT.name} (ID: {selectedNFT.id})
+                        </div>
+                    ) : (
+                        <p className="text-gray-500">No NFT selected</p>
+                    )}
+                </div>
+            </div>
+
+
         </div>
     );
-});
+};
 
+// Export both components and the Selector
 export default Selector;
+export { NFTSelect, NFTMultiSelect };
