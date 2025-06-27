@@ -111,7 +111,7 @@ const AdminSettings = () => {
                         {/* Change Item Price */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-300">
-                                Change Item Price
+                                Base Price for NFT
                             </label>
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                                 <div className="relative flex-1">
@@ -134,14 +134,14 @@ const AdminSettings = () => {
                                 </div>
                             </div>
                             <p className="text-xs text-gray-500">
-                                Set the price for changing existing items
+                                Set the price for existing NFTs
                             </p>
                         </div>
 
                         {/* Create Item Price */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-300">
-                                Create Item Price
+                                Burn NFT Price
                             </label>
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                                 <div className="relative flex-1">
@@ -164,7 +164,7 @@ const AdminSettings = () => {
                                 </div>
                             </div>
                             <p className="text-xs text-gray-500">
-                                Set the price for creating new items
+                                Set the price for burning NFTs
                             </p>
                         </div>
                     </div>
@@ -173,8 +173,8 @@ const AdminSettings = () => {
                 {/* Status Messages */}
                 {saveStatus && (
                     <div className={`mb-4 p-4 rounded-lg flex items-center space-x-2 ${saveStatus === 'success'
-                            ? 'bg-green-900/20 border border-green-500/30 text-green-400'
-                            : 'bg-red-900/20 border border-red-500/30 text-red-400'
+                        ? 'bg-green-900/20 border border-green-500/30 text-green-400'
+                        : 'bg-red-900/20 border border-red-500/30 text-red-400'
                         }`}>
                         {saveStatus === 'success' ? (
                             <Check className="w-5 h-5" />
@@ -196,8 +196,8 @@ const AdminSettings = () => {
                         onClick={handleSave}
                         disabled={!isFormValid || isSaving}
                         className={`flex items-center space-x-2 px-8 py-3 rounded-lg font-medium transition-all duration-200 w-full sm:w-auto justify-center ${!isFormValid || isSaving
-                                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#115E4C] text-white hover:bg-[#50D2C1] hover:shadow-lg hover:shadow-[#50D2C1]/20'
+                            ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                            : 'bg-[#115E4C] text-white hover:bg-[#50D2C1] hover:shadow-lg hover:shadow-[#50D2C1]/20'
                             }`}
                     >
                         <Save className={`w-5 h-5 ${isSaving ? 'animate-spin' : ''}`} />
