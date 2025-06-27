@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.conf import settings
 from django.utils import timezone
 import datetime
+from cloudinary.models import CloudinaryField
+from cloudinary import CloudinaryImage
+
 
 class EthUserManager(BaseUserManager):
     def create_user(self, address, password=None, **extra_fields):
@@ -50,18 +53,46 @@ class ImageUrl(models.Model):
     def __str__(self):
         return f"{self.url}"
 
+class AppSettings(models.Model):
+    base_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    amount_to_burn = models.IntegerField(default=1000)
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        return cls.objects.get_or_create(pk=1)[0]
+
+    def __str__(self):
+        return "App Settings"
+
 class Update_Request(models.Model):
-    transaction_hash = models.CharField(max_length=88, primary_key=True, unique= True, editable= False)
-    address = models.CharField(max_length=44, editable=False)
+    transaction_hash = models.CharField(max_length=88, primary_key=True, unique=True, null= False)
+    address = models.CharField(max_length=44)
     update_id = models.IntegerField()
-    burn_id = models.IntegerField()
+    burn_ids = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     update_name = models.CharField(max_length=100)
-    image_url = models.CharField(max_length=500)
-    updated = models.BooleanField(default= False)
+    description = models.TextField(blank=True, null=True)
+    image = CloudinaryField('image')  # Cloudinary handles storage
+    downloaded = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.update_name} ({self.address})"
+
+    def get_image_small(self):
+        """Returns small version (300x300)"""
+        if self.image:
+            return CloudinaryImage(self.image.public_id).build_url(width=300, height=300, crop='limit')
+        return None
+
+    def get_image_original(self):
+        """Returns original version"""
+        if self.image:
+            return self.image.url
+        return None
 
 class ExpiringToken(models.Model):
     key = models.CharField(max_length=40, primary_key=True)

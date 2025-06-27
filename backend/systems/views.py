@@ -1,28 +1,30 @@
 from datetime import datetime
 from django.http import HttpResponse
-from .models import EthUser, ImageUrl, Update_Request
+from .models import EthUser, ImageUrl, Update_Request, AppSettings
 import uuid
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from .serializers import (
-    SignatureVerifySerializer, UpdateRequestSerializer
+    SignatureVerifySerializer, UpdateRequestSerializer,
+    AppSettingsSerializer
 )
 from django.conf import settings
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from web3 import Web3
 import requests
-from rest_framework import generics
+from rest_framework import generics, viewsets, status
 from .models import EthUser, ExpiringToken
 from django.utils.crypto import get_random_string
-from .serializers import SignatureVerifySerializer
-import uuid
-import os
 from django.utils import timezone
 from .permissions import HasCronSecretPermission
 from dotenv import load_dotenv
 import logging
+import zipfile
+from io import BytesIO
+import os
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -188,11 +190,6 @@ class UpdateImageUrlFromIPFS(APIView):
         token_uri:str = contract.functions.tokenURI(token_id).call()
         return token_uri
 
-class UpdateRequestCreateView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = Update_Request.objects.all()
-    serializer_class = UpdateRequestSerializer
-
 class CleanupExpiredTokensView(APIView):
     permission_classes = [HasCronSecretPermission]
 
@@ -201,4 +198,106 @@ class CleanupExpiredTokensView(APIView):
             count, _ = ExpiringToken.objects.filter(expires_at__lte=timezone.now()).delete()
             return Response({"deleted_tokens": count})
         except Exception as e:
-            return Response({"error": f"Internal server error{e}"}, status=500)#Response({"error": "Internal server error"}, status=500)    
+            return Response({"error": f"Internal server error{e}"}, status=500)   
+
+class UpdateRequestViewSet(viewsets.ModelViewSet):
+    queryset = Update_Request.objects.all()
+    permission_classes = [AllowAny]#IsAuthenticated]
+    serializer_class = UpdateRequestSerializer
+
+    def generate_zip(self, instances):
+        """Generate a ZIP file from a list of Update_Request instances"""
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for instance in instances:
+                # Add metadata
+                metadata = (
+                    f"Transaction Hash: {instance.transaction_hash}\n"
+                    f"Address: {instance.address}\n"
+                    f"Update ID: {instance.update_id}\n"
+                    f"Update Name: {instance.update_name}\n"
+                    f"Burn IDs: {instance.burn_ids}\n"
+                    f"Created At: {instance.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                    f"Downloaded: {instance.downloaded}\n"
+                )
+                zip_file.writestr(f"{instance.transaction_hash}/metadata.txt", metadata)
+
+                # Add image
+                if instance.image:
+                    try:
+                        img_url = instance.get_image_original()
+                        img_response = requests.get(img_url)
+                        if img_response.status_code == 200:
+                            ext = img_url.split('.')[-1].split('?')[0]
+                            zip_file.writestr(f"{instance.transaction_hash}/image.{ext}", img_response.content)
+                    except Exception as e:
+                        zip_file.writestr(f"{instance.transaction_hash}/error.txt", f"Image failed: {str(e)}")
+
+                # Set downloaded = True
+                instance.downloaded = True
+                instance.save(update_fields=['downloaded'])
+
+        zip_buffer.seek(0)
+        return zip_buffer
+
+    @action(detail=False, methods=['get'])
+    def download_all(self, request):
+        """Download all Update Requests"""
+        instances = Update_Request.objects.all()
+        zip_buffer = self.generate_zip(instances)
+        return self._return_zip(zip_buffer, 'all_update_requests.zip')
+
+    @action(detail=False, methods=['get'])
+    def download_new(self, request):
+        """Download only those not yet downloaded"""
+        instances = Update_Request.objects.filter(downloaded=False)
+        print(instances)
+        zip_buffer = self.generate_zip(instances)
+        return self._return_zip(zip_buffer, 'new_update_requests.zip')
+
+    @action(detail=False, methods=['get'])
+    def download_downloaded(self, request):
+        """Download only those already downloaded"""
+        instances = Update_Request.objects.filter(downloaded=True)
+        zip_buffer = self.generate_zip(instances)
+        return self._return_zip(zip_buffer, 'already_downloaded_update_requests.zip')
+
+    @action(detail=True, methods=['get'])
+    def download(self, request, pk=None):
+        """Download a single Update Request"""
+        try:
+            instance = self.get_object()
+            zip_buffer = self.generate_zip([instance])
+            return self._return_zip(zip_buffer, f"{instance.transaction_hash}.zip")
+        except Update_Request.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def _return_zip(self, zip_buffer, filename):
+        """Helper to return a zip as an HTTP response"""
+        response = HttpResponse(zip_buffer, content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+class AppSettingsView(APIView):
+    permission_classes = [AllowAny]#IsAdminUser]  # Or your custom permission
+
+    def get(self, request):
+        settings = AppSettings.load()
+        serializer = AppSettingsSerializer(settings)
+        return Response(serializer.data)
+
+    def put(self, request):
+        settings = AppSettings.load()
+        serializer = AppSettingsSerializer(settings, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        settings = AppSettings.load()
+        serializer = AppSettingsSerializer(settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
