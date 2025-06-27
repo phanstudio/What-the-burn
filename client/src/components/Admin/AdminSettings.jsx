@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Save,
     DollarSign,
@@ -6,6 +6,16 @@ import {
     Check,
     AlertCircle
 } from 'lucide-react';
+import axios from 'axios';
+import { useAccount, useWalletClient } from 'wagmi';
+import { ethers } from 'ethers';
+
+const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+const BURN_MANGER_ABI = [
+    "function createPremium(uint32[] tokenIds, uint32 update_id)",
+    "function setBurnFee(uint256 _newFee)",
+    "function setMinimumBurnAmount(uint16 amount)"
+];
 
 const AdminSettings = () => {
     // Current prices (these would typically come from an API or state management)
@@ -23,6 +33,28 @@ const AdminSettings = () => {
     // UI state
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+    const jwt = sessionStorage.getItem('jwt');
+
+    const { _, isConnected } = useAccount();
+    const { data: walletClient } = useWalletClient();
+
+    const callContract = async () => {
+        if (!isConnected || !walletClient) return;
+        try {
+            
+            const provider = new ethers.BrowserProvider(walletClient.transport);
+            const signer = await provider.getSigner();
+
+            const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
+            // burnManger.setBurnFee() convert to ethers
+            // formData.changePrice
+            burnManger.setMinimumBurnAmount(formData.createPrice)
+            // await burnManger.createPremium([...Array(10)].map((_, i) => i + 2), 2)
+        } catch (error) {
+            console.error("❌ Contract call failed:", error);
+        }
+    };
+
 
     const handleInputChange = (field, value) => {
         // Only allow numbers and decimal points
@@ -57,8 +89,19 @@ const AdminSettings = () => {
                 throw new Error('Create price must be a valid positive number');
             }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // await callContract() # set values in the contract
+            await axios.put(
+                'https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/',
+                {
+                    headers: {
+                        Authorization: `Token ${jwt}`
+                    }
+                },
+                {
+                    base_fee: changePrice,
+                    amount_to_burn: createPrice,
+                }
+            );
 
             // Update current prices with new values if provided
             const updatedPrices = { ...currentPrices };
@@ -88,6 +131,30 @@ const AdminSettings = () => {
             setIsSaving(false);
         }
     };
+
+    useEffect(() => {
+        const fetchInfo = async () => {
+            if (!jwt) return;
+
+            try {
+                const response = await axios.get(
+                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`, 
+                    {
+                        headers: {
+                            Authorization: `Token ${jwt}`
+                        }
+                    }
+                );
+                setCurrentPrices({
+                    changePrice: parseFloat(response.data.base_fee),
+                    createPrice: response.data.amount_to_burn
+                })
+            } catch (err) {
+                console.error('❌ Failed to fetch settings data:', err);
+            }
+        };
+        fetchInfo();
+    }, [jwt]);
 
     const isFormValid = formData.changePrice || formData.createPrice;
 
@@ -129,7 +196,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.changePrice.toFixed(2)}
+                                        ${currentPrices.changePrice.toFixed(8)}
                                     </span>
                                 </div>
                             </div>
@@ -159,7 +226,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.createPrice.toFixed(2)}
+                                        {currentPrices.createPrice.toFixed(0)}
                                     </span>
                                 </div>
                             </div>
