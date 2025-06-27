@@ -8,3 +8,6 @@ requests
 eth-account
 web3
 djangorestframework_simplejwt
+django-cloudinary-storage 
+pillow
+cloudinary
