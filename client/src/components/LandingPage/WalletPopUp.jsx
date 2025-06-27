@@ -36,7 +36,7 @@ const WalletSignaturePopup = ({ onClose, onapprove}) => {
 
     return (
         <div
-            className="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[1000] bg-[#0F1A1F] backdrop-blur-sm flex items-center justify-center p-4"
             onClick={closePopup}
         >
             <div
