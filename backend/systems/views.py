@@ -246,7 +246,6 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
 
                 # Set downloaded = True
                 instance.downloaded = True
-                print(instances.downloaded, instances.transaction_hash)
                 instance.save(update_fields=['downloaded'])
 
         zip_buffer.seek(0)
