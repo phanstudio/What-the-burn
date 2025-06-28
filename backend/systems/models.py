@@ -6,7 +6,6 @@ import datetime
 from cloudinary.models import CloudinaryField
 from cloudinary import CloudinaryImage
 
-
 class EthUserManager(BaseUserManager):
     def create_user(self, address, password=None, **extra_fields):
         if not address:

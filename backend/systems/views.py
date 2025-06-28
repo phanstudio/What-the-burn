@@ -244,9 +244,7 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
                     except Exception as e:
                         zip_file.writestr(f"{instance.transaction_hash}/error.txt", f"Image failed: {str(e)}")
 
-                # Set downloaded = True
                 instance.downloaded = True
-                print(instances.downloaded, instances.transaction_hash)
                 instance.save(update_fields=['downloaded'])
 
         zip_buffer.seek(0)
