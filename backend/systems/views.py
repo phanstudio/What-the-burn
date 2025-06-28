@@ -205,6 +205,17 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]#IsAuthenticated]
     serializer_class = UpdateRequestSerializer
 
+    def get_queryset(self):
+        """Allows filtering by `downloaded` status"""
+        queryset = super().get_queryset()
+        downloaded = self.request.query_params.get('downloaded')
+        if downloaded is not None:
+            if downloaded.lower() == 'true':
+                queryset = queryset.filter(downloaded=True)
+            elif downloaded.lower() == 'false':
+                queryset = queryset.filter(downloaded=False)
+        return queryset
+
     def generate_zip(self, instances):
         """Generate a ZIP file from a list of Update_Request instances"""
         zip_buffer = BytesIO()
@@ -235,6 +246,7 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
 
                 # Set downloaded = True
                 instance.downloaded = True
+                print(instances.downloaded, instances.transaction_hash)
                 instance.save(update_fields=['downloaded'])
 
         zip_buffer.seek(0)
