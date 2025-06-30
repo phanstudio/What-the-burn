@@ -41,7 +41,7 @@ const AdminSettings = () => {
     const callContract = async () => {
         if (!isConnected || !walletClient) return;
         try {
-            
+
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
 
@@ -134,15 +134,14 @@ const AdminSettings = () => {
         }
     };
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
     useEffect(() => {
         const fetchInfo = async () => {
             if (!jwt) return;
 
             try {
                 const response = await axios.get(
-                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`, 
+                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`,
                     {
                         headers: {
                             Authorization: `Token ${jwt}`
@@ -160,13 +159,10 @@ const AdminSettings = () => {
         fetchInfo();
     }, [jwt]);
 
-    const isFormValid = formData.changePrice || formData.createPrice;
-=======
+
+
     const isFormValid = formData.burnAmount || formData.createPrice;
->>>>>>> Stashed changes
-=======
-    const isFormValid = formData.burnAmount || formData.createPrice;
->>>>>>> Stashed changes
+
 
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
@@ -207,15 +203,10 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                        ${currentPrices.changePrice.toFixed(8)}
-=======
+
+
                                         ${currentValues.burnAmount.toFixed(2)}
->>>>>>> Stashed changes
-=======
-                                        ${currentValues.burnAmount.toFixed(2)}
->>>>>>> Stashed changes
+
                                     </span>
                                 </div>
                             </div>
@@ -247,15 +238,10 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                                        {currentPrices.createPrice.toFixed(0)}
-=======
+
+
                                         ${currentValues.createPrice.toFixed(2)}
->>>>>>> Stashed changes
-=======
-                                        ${currentValues.createPrice.toFixed(2)}
->>>>>>> Stashed changes
+
                                     </span>
                                 </div>
                             </div>
