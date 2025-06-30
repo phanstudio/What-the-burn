@@ -8,6 +8,7 @@ import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const NFT_ABI = [
     "function symbol() public view returns (string)",
@@ -22,6 +23,9 @@ const BURN_MANGER_ABI = [
 
 
 function BurnPage() {
+=======
+const BurnPage = () => {
+>>>>>>> Stashed changes
 =======
 const BurnPage = () => {
 >>>>>>> Stashed changes
@@ -43,6 +47,7 @@ const BurnPage = () => {
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+<<<<<<< Updated upstream
 
 <<<<<<< Updated upstream
     const callContract = async () => {
@@ -68,6 +73,9 @@ const BurnPage = () => {
 
     // 🚨 Redirect to "/" if wallet disconnects
 =======
+>>>>>>> Stashed changes
+=======
+
 >>>>>>> Stashed changes
     useEffect(() => {
         if (!isConnected) {
@@ -169,6 +177,7 @@ const BurnPage = () => {
                     <h1 className="text-3xl font-bold">Burn NFTs</h1>
                 </div>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             </div>
             <div className=" flex flex-col mx-auto w-full max-w-3xl bg-[#1A2429] p-6 rounded-lg shadow-lg">
                 <div className=" space-y-8">
@@ -182,6 +191,12 @@ const BurnPage = () => {
                     Connected Wallet: <span className="font-mono text-wrap text-emerald-400">{address}</span>
                 </p>
             </div>
+=======
+                <p className="mb-4">
+                    Connected Wallet: <span className="font-mono text-wrap text-emerald-400">{address}</span>
+                </p>
+            </div>
+>>>>>>> Stashed changes
 
             <div className="flex flex-col mx-auto w-full max-w-3xl bg-[#1A2429] p-6 rounded-lg shadow-lg">
                 <div className="space-y-8">
@@ -240,6 +255,9 @@ const BurnPage = () => {
                             </details>
                         </div>
                     )}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 </div>
             </div>
