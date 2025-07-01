@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
     Copy,
     Download,
@@ -11,57 +12,27 @@ import {
 
 const AdminDashboard = () => {
     const [copiedId, setCopiedId] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
+    const [pendingItems, setPendingItems] = useState([]);
+    const [approvedItems, setApprovedItems] = useState([]);
 
-    // Sample data for the first list
-    const pendingItems = [
-        {
-            id: 1,
-            image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-001-2024',
-            transactionHash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12'
-        },
-        {
-            id: 2,
-            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-002-2024',
-            transactionHash: '0x9876543210fedcba0987654321fedcba09876543'
-        },
-        {
-            id: 3,
-            image: 'https://images.unsplash.com/photo-1494790108755-2616c2d3648c?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-003-2024',
-            transactionHash: '0xabcdef1234567890abcdef1234567890abcdef12'
-        }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
+                const [pendingRes, approvedRes] = await Promise.all([
+                    axios.get(uri+'/update-requests/?downloaded=false'),
+                    axios.get(uri+'/update-requests/?downloaded=true')
+                ]);
+                console.log(pendingRes.data, approvedRes.data)
+                setPendingItems(pendingRes.data);
+                setApprovedItems(approvedRes.data);
+            } catch (error) {
+                console.error("Error fetching update requests:", error);
+            }
+        };
 
-    // Sample data for the second list
-    const approvedItems = [
-        {
-            id: 4,
-            image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-004-2024',
-            transactionHash: '0x1111222233334444555566667777888899990000'
-        },
-        {
-            id: 5,
-            image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-005-2024',
-            transactionHash: '0xaaaa111122223333444455556666777788889999'
-        },
-        {
-            id: 6,
-            image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-006-2024',
-            transactionHash: '0xbbbb222233334444555566667777888899990000'
-        },
-        {
-            id: 7,
-            image: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=80&h=80&fit=crop&crop=center',
-            tokenId: 'TKN-007-2024',
-            transactionHash: '0xcccc333344445555666677778888999900001111'
-        }
-    ];
+        fetchData();
+    }, []);
 
     const handleCopy = async (text, id) => {
         try {
@@ -73,38 +44,68 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleDownload = (item) => {
-        // Simulate download functionality
+    function downloadBlobAsFile(blobData, contentDispositionHeader, defaultFileName = 'download.zip') {
+        const blob = new Blob([blobData], { type: 'application/zip' });
+        const downloadUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = item.image;
-        link.download = `${item.tokenId}.jpg`;
+        link.href = downloadUrl;
+        let fileName = defaultFileName;
+        if (contentDispositionHeader && contentDispositionHeader.includes('filename=')) {
+            fileName = contentDispositionHeader
+                .split('filename=')[1]
+                .replace(/["']/g, '');
+        }
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
         link.click();
+        link.remove();
+        window.URL.revokeObjectURL(downloadUrl); // Clean up
+    }
+
+    const handleDownload = async (item) => {
+        try {
+            const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app';
+            const response = await axios.get(`${uri}/update-requests/${item.transaction_hash}/download/`, {
+                responseType: 'blob',
+            });
+            downloadBlobAsFile(response.data, response.headers['content-disposition'], `${item.transaction_hash}.zip`);
+            setPendingItems(prev => prev.filter(i => i.transaction_hash !== item.transaction_hash));
+            setApprovedItems(prev => [...prev, item]);
+        } catch (error) {
+            console.error("Error fetching update requests:", error);
+        }  
     };
 
-    const handleDownloadAll = (items, listName) => {
-        // Simulate downloading all items
-        items.forEach((item, index) => {
-            setTimeout(() => {
-                handleDownload(item);
-            }, index * 100); // Stagger downloads
-        });
+    const handleDownloadAll = async (_items, listName) => {
+        let download_type = "download_downloaded";
+        let url_type = 'update_requests_old.zip'
+        if (listName === "pending") {
+            download_type = "download_new";
+            url_type = 'update_requests.zip'
+        }
+        try {
+            const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app';
+            const response = await axios.get(`${uri}/update-requests/${download_type}/`, {
+                responseType: 'blob',
+            });
+            downloadBlobAsFile(response.data, response.headers['content-disposition'], url_type);
+            if (listName === "pending") {
+                setApprovedItems(prev => [...prev, ...pendingItems]);
+                setPendingItems([]);
+            }
+        } catch (error) {
+            console.error("Error downloading update requests:", error);
+        }
     };
-
-    const handleSave = async () => {
-        setIsSaving(true);
-        // Simulate save operation
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setIsSaving(false);
-    };
-
+    
     const ListItem = ({ item, listType }) => (
         <div className="bg-[#141f24] rounded-lg shadow-sm p-3 sm:p-4 hover:shadow-md hover:shadow-[#13776a] transition-shadow duration-200">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 {/* Image */}
                 <div className="flex-shrink-0 flex justify-center sm:justify-start">
                     <img
-                        src={item.image}
-                        alt={`Token ${item.tokenId}`}
+                        src={item.image_small}
+                        alt={`Token ${item.update_id}`}
                         className="w-16 h-16 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg object-cover"
                     />
                 </div>
@@ -119,13 +120,13 @@ const AdminDashboard = () => {
                                 <span className="text-sm font-medium text-[#d6d6d6]">Token ID:</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <span className="text-sm text-[#50D2C1] font-mono break-all sm:break-normal">{item.tokenId}</span>
+                                <span className="text-sm text-[#50D2C1] font-mono break-all sm:break-normal">What{item.update_id}</span>
                                 <button
-                                    onClick={() => handleCopy(item.tokenId, `token-${item.id}`)}
+                                    onClick={() => handleCopy(item.update_id, `token-${item.update_id}`)}
                                     className="p-1 hover:bg-gray-100 rounded transition-colors duration-200 flex-shrink-0"
                                     title="Copy Token ID"
                                 >
-                                    {copiedId === `token-${item.id}` ? (
+                                    {copiedId === `token-${item.update_id}` ? (
                                         <Check className="w-4 h-4 text-green-500" />
                                     ) : (
                                         <Copy className="w-4 h-4 text-gray-400" />
@@ -142,14 +143,14 @@ const AdminDashboard = () => {
                             </div>
                             <div className="flex items-center space-x-2">
                                 <span className="text-sm text-[#50D2C1] font-mono truncate max-w-[200px] sm:max-w-32 lg:max-w-40">
-                                    {item.transactionHash}
+                                    {item.transaction_hash}
                                 </span>
                                 <button
-                                    onClick={() => handleCopy(item.transactionHash, `hash-${item.id}`)}
+                                    onClick={() => handleCopy(item.transaction_hash, `hash-${item.update_id}`)}
                                     className="p-1 hover:bg-gray-100 rounded transition-colors duration-200 flex-shrink-0"
                                     title="Copy Transaction Hash"
                                 >
-                                    {copiedId === `hash-${item.id}` ? (
+                                    {copiedId === `hash-${item.update_id}` ? (
                                         <Check className="w-4 h-4 text-green-500" />
                                     ) : (
                                         <Copy className="w-4 h-4 text-gray-400" />
@@ -198,7 +199,7 @@ const AdminDashboard = () => {
 
                     <div className="space-y-3 sm:space-y-4 mb-4">
                         {pendingItems.map((item) => (
-                            <ListItem key={item.id} item={item} listType="pending" />
+                            <ListItem key={item.update_id} item={item} listType="pending" />
                         ))}
                     </div>
 
@@ -225,7 +226,7 @@ const AdminDashboard = () => {
 
                     <div className="space-y-3 sm:space-y-4 mb-4">
                         {approvedItems.map((item) => (
-                            <ListItem key={item.id} item={item} listType="approved" />
+                            <ListItem key={item.update_id} item={item} listType="approved" />
                         ))}
                     </div>
 
@@ -237,21 +238,6 @@ const AdminDashboard = () => {
                         <span className="font-medium text-sm sm:text-base">Download All Approved</span>
                     </button>
                 </div>
-
-                {/* Save Button */}
-                {/* <div className="flex justify-center pt-6 border-t border-gray-200">
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className={`flex items-center space-x-2 px-8 py-3 rounded-lg font-medium transition-all duration-200 w-full sm:w-auto justify-center ${isSaving
-                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg'
-                            }`}
-                    >
-                        <Save className={`w-5 h-5 ${isSaving ? 'animate-spin' : ''}`} />
-                        <span>{isSaving ? 'Saving Changes...' : 'Save All Changes'}</span>
-                    </button>
-                </div> */}
             </div>
         </div>
     );

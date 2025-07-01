@@ -55,7 +55,6 @@ const AdminSettings = () => {
         }
     };
 
-
     const handleInputChange = (field, value) => {
         // Only allow numbers and decimal points
         const numericValue = value.replace(/[^0-9.]/g, '');
