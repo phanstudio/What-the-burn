@@ -134,6 +134,7 @@ const AdminSettings = () => {
         }
     };
 
+<<<<<<< Updated upstream
 
     useEffect(() => {
         const fetchInfo = async () => {
@@ -163,6 +164,9 @@ const AdminSettings = () => {
 
     const isFormValid = formData.burnAmount || formData.createPrice;
 
+=======
+    const isFormValid = formData.burnAmount || formData.createPrice;
+>>>>>>> Stashed changes
 
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
@@ -203,10 +207,14 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
+<<<<<<< Updated upstream
 
 
                                         ${currentValues.burnAmount.toFixed(2)}
 
+=======
+                                        ${currentValues.burnAmount.toFixed(2)}
+>>>>>>> Stashed changes
                                     </span>
                                 </div>
                             </div>
@@ -238,10 +246,14 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
+<<<<<<< Updated upstream
 
 
                                         ${currentValues.createPrice.toFixed(2)}
 
+=======
+                                        ${currentValues.createPrice.toFixed(2)}
+>>>>>>> Stashed changes
                                     </span>
                                 </div>
                             </div>
