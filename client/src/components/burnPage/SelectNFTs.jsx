@@ -10,7 +10,9 @@ const NFTMultiSelect = ({
     disabled = false,
     unavailableNFTs = [],
     error = null,
-    required = false
+    required = false,
+    name = "selectedNFTs",
+    onValidationChange
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFTs, setSelectedNFTs] = useState([]);
@@ -32,14 +34,21 @@ const NFTMultiSelect = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen]);
 
-    // Validate selection
     const validateSelection = (selection) => {
-        if (required && (!selection || selection.length === 0)) {
-            setLocalError('Please select at least one NFT');
-            return false;
+        const isValid = !(required && (!selection || selection.length === 0));
+        const errorMessage = isValid ? '' : 'Please select at least one NFT';
+        setLocalError(errorMessage);
+
+        if (onValidationChange) {
+            onValidationChange({
+                name,
+                isValid,
+                error: errorMessage,
+                value: selection
+            });
         }
-        setLocalError('');
-        return true;
+
+        return isValid;
     };
 
     const isSelected = (nft) => {
@@ -91,12 +100,8 @@ const NFTMultiSelect = ({
     };
 
     const getDisplayText = () => {
-        if (selectedNFTs.length === 0) {
-            return placeholder;
-        }
-        if (selectedNFTs.length === 1) {
-            return selectedNFTs[0].name;
-        }
+        if (selectedNFTs.length === 0) return placeholder;
+        if (selectedNFTs.length === 1) return selectedNFTs[0].name;
         return `${selectedNFTs[0].name} (+${selectedNFTs.length - 1} more)`;
     };
 
@@ -113,7 +118,7 @@ const NFTMultiSelect = ({
 
     return (
         <div className={`relative w-full max-w-md ${className}`} ref={dropdownRef}>
-            {/* Main Select Button */}
+            {/* Main Button */}
             <button
                 onClick={toggleDropdown}
                 disabled={disabled}
@@ -623,7 +628,7 @@ const Selector = forwardRef(({
                                     </span>
                                 </p>
                                 <p className="text-white">Status:
-                                    <span className={`ml-2 font-semibold ${multipleSelection.length > 0 && singleSelection ? 'text-green-400' : 'text-yellow-400'}`}>
+                                    <span className={`ml-2 font-semibold ${multipleSelection.length > 10 && singleSelection ? 'text-green-400' : 'text-yellow-400'}`}>
                                         {multipleSelection.length > 0 && singleSelection ? 'Ready' : 'Incomplete'}
                                     </span>
                                 </p>

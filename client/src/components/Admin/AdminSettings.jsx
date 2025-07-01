@@ -19,14 +19,14 @@ const BURN_MANGER_ABI = [
 
 const AdminSettings = () => {
     // Current prices (these would typically come from an API or state management)
-    const [currentPrices, setCurrentPrices] = useState({
-        changePrice: 25.99,
+    const [currentValues, setCurrentValues] = useState({
+        burnAmount: 25.99,
         createPrice: 15.50
     });
 
     // Form state
     const [formData, setFormData] = useState({
-        changePrice: '',
+        burnAmount: '',
         createPrice: ''
     });
 
@@ -41,7 +41,7 @@ const AdminSettings = () => {
     const callContract = async () => {
         if (!isConnected || !walletClient) return;
         try {
-            
+
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
 
@@ -75,12 +75,14 @@ const AdminSettings = () => {
         setIsSaving(true);
         setSaveStatus(null);
 
+
+
         try {
             // Validate inputs
-            const changePrice = parseFloat(formData.changePrice);
+            const burnAmount = parseFloat(formData.burnAmount);
             const createPrice = parseFloat(formData.createPrice);
 
-            if (formData.changePrice && (isNaN(changePrice) || changePrice <= 0)) {
+            if (formData.burnAmount && (isNaN(burnAmount) || burnAmount <= 0)) {
                 throw new Error('Change price must be a valid positive number');
             }
 
@@ -103,19 +105,19 @@ const AdminSettings = () => {
             );
 
             // Update current prices with new values if provided
-            const updatedPrices = { ...currentPrices };
-            if (formData.changePrice) {
-                updatedPrices.changePrice = changePrice;
+            const updatedValues = { ...currentValues };
+            if (formData.burnAmount) {
+                updatedValues.burnAmount = burnAmount;
             }
             if (formData.createPrice) {
-                updatedPrices.createPrice = createPrice;
+                updatedValues.createPrice = createPrice;
             }
 
-            setCurrentPrices(updatedPrices);
+            setCurrentValues(updatedValues);
 
             // Clear form
             setFormData({
-                changePrice: '',
+                burnAmount: '',
                 createPrice: ''
             });
 
@@ -131,13 +133,15 @@ const AdminSettings = () => {
         }
     };
 
+<<<<<<< Updated upstream
+
     useEffect(() => {
         const fetchInfo = async () => {
             if (!jwt) return;
 
             try {
                 const response = await axios.get(
-                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`, 
+                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`,
                     {
                         headers: {
                             Authorization: `Token ${jwt}`
@@ -155,7 +159,13 @@ const AdminSettings = () => {
         fetchInfo();
     }, [jwt]);
 
-    const isFormValid = formData.changePrice || formData.createPrice;
+
+
+    const isFormValid = formData.burnAmount || formData.createPrice;
+
+=======
+    const isFormValid = formData.burnAmount || formData.createPrice;
+>>>>>>> Stashed changes
 
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
@@ -169,33 +179,41 @@ const AdminSettings = () => {
                 {/* Settings Form */}
                 <div className="bg-[#141f24] rounded-lg shadow-lg p-4 sm:p-6 mb-6">
                     <h2 className="text-xl font-semibold text-[#50D2C1] mb-6 flex items-center space-x-2">
-                        <DollarSign className="w-5 h-5" />
-                        <span>Price Configuration</span>
+
+                        <span>Configurations</span>
                     </h2>
 
                     <div className="space-y-6">
-                        {/* Change Item Price */}
+                        {/* Burn NFT Price */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-300">
-                                Base Price for NFT
+                                Base number of NFTs to burnt
                             </label>
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                                 <div className="relative flex-1">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <DollarSign className="h-5 w-5 text-gray-400" />
+                                        <Plus className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type="text"
-                                        value={formData.changePrice}
-                                        onChange={(e) => handleInputChange('changePrice', e.target.value)}
-                                        placeholder="Enter new price"
-                                        className="w-full pl-10 pr-3 py-3 bg-[#0F1A1F] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#50D2C1] focus:border-transparent transition-colors"
+                                        value={formData.burnAmount}
+                                        onChange={(e) => handleInputChange('burnAmount', e.target.value)}
+                                        placeholder="Enter new amount"
+                                        className="w-full pl-10 pr-3 py-3 bg-[#0F1A1F] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2
+                                         focus:ring-[#50D2C1] focus:border-transparent transition-colors"
                                     />
                                 </div>
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.changePrice.toFixed(8)}
+<<<<<<< Updated upstream
+
+
+                                        ${currentValues.burnAmount.toFixed(2)}
+
+=======
+                                        ${currentValues.burnAmount.toFixed(2)}
+>>>>>>> Stashed changes
                                     </span>
                                 </div>
                             </div>
@@ -212,20 +230,29 @@ const AdminSettings = () => {
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                                 <div className="relative flex-1">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Plus className="h-5 w-5 text-gray-400" />
+
+                                        <DollarSign className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type="text"
                                         value={formData.createPrice}
                                         onChange={(e) => handleInputChange('createPrice', e.target.value)}
                                         placeholder="Enter new price"
-                                        className="w-full pl-10 pr-3 py-3 bg-[#0F1A1F] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#50D2C1] focus:border-transparent transition-colors"
+                                        className="w-full pl-10 pr-3 py-3 bg-[#0F1A1F] border border-gray-600 rounded-lg text-white
+                                         placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#50D2C1] focus:border-transparent transition-colors"
                                     />
                                 </div>
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        {currentPrices.createPrice.toFixed(0)}
+<<<<<<< Updated upstream
+
+
+                                        ${currentValues.createPrice.toFixed(2)}
+
+=======
+                                        ${currentValues.createPrice.toFixed(2)}
+>>>>>>> Stashed changes
                                     </span>
                                 </div>
                             </div>
