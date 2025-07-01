@@ -122,6 +122,13 @@ const BurnPage = () => {
     const handleBurn = async () => {
         const newErrors = {};
 
+        // Validate multiple NFT selections
+        if (!formData.nftSelections.multiple || formData.nftSelections.multiple.length === 0) {
+            newErrors.nftSelections = 'Select at least one NFTs.';
+        } else if (formData.nftSelections.multiple.length > 10) {
+            newErrors.nftSelections = 'You can select a maximum of 10 NFTs.';
+        }
+
         // Validate NFT selections
         if (!formData.nftSelections.multiple.length) {
             newErrors.nftSelections = 'Select at least one NFT.';
