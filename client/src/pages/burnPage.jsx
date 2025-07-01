@@ -6,6 +6,7 @@ import { useAccount, useWalletClient } from 'wagmi';
 import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
+
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import { disconnect } from '@wagmi/core'
@@ -22,7 +23,6 @@ const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1
 const BURN_MANGER_ABI = [
     "function createPremium(uint32[] tokenIds, uint32 update_id)"
 ];
-
 
 const BurnPage = () => {
     const { address, isConnected } = useAccount();
@@ -47,15 +47,15 @@ const BurnPage = () => {
     const callContract = async () => {
         if (!isConnected || !walletClient) return;
         try {
-            
+
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
 
             const burnManager = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
-            
+
             // check first for approval first
-            if (await isApprovedForAll(address, BURN_MANGER_ADDRESS) === false){
+            if (await isApprovedForAll(address, BURN_MANGER_ADDRESS) === false) {
                 await nftContract.setApprovalForAll(BURN_MANGER_ADDRESS, true)
             }
             await burnManager.createPremium([...Array(10)].map((_, i) => i + 2), 2)
@@ -90,8 +90,73 @@ const BurnPage = () => {
                 console.error('❌ Failed to fetch NFTs:', err);
             }
         };
+
         fetchNFTs();
     }, [jwt]);
+
+    const handleDescriptionChange = (value) => {
+        setFormData(prev => ({ ...prev, description: value }));
+    };
+
+    const handleNFTSelection = (selectionData) => {
+        const nftSelections = {
+            multiple: selectionData.multiple || [],
+            single: selectionData.single || null
+        };
+
+        setFormData(prev => ({ ...prev, nftSelections }));
+    };
+
+    const handleFileUpload = (uploadedFiles) => {
+        setFormData(prev => ({ ...prev, uploadedFiles }));
+    };
+
+    const handleBurn = async () => {
+        const newErrors = {};
+
+        if (!formData.nftSelections.multiple.length) {
+            newErrors.nftSelections = 'Select at least one NFT.';
+        }
+
+        if (!formData.description || formData.description.trim().length < 10) {
+            newErrors.description = 'Description must be at least 10 characters.';
+        }
+
+        if (!nftName || nftName.trim().length < 3) {
+            newErrors.nftName = 'NFT name must be at least 3 characters.';
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) return;
+
+        setIsSubmitting(true);
+
+        try {
+            console.log('🔥 Starting burn process...', {
+                description: formData.description,
+                multipleNFTs: formData.nftSelections.multiple,
+                featuredNFT: formData.nftSelections.single,
+                files: formData.uploadedFiles
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+
+            console.log('✅ Burn successful!');
+
+            setFormData({
+                description: '',
+                nftSelections: { multiple: [], single: null },
+                uploadedFiles: []
+            });
+            setNftName('');
+            setErrors({});
+        } catch (error) {
+            console.error('❌ Burn failed:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="p-6 flex flex-col bg-[#0F1A1F] min-h-screen text-white">
