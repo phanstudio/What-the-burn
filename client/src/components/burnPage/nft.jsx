@@ -113,18 +113,18 @@ const NFTMultiSelect = ({
         }
         return `${selectedNFTs[0].name} (+${selectedNFTs.length - 1} more)`;
     };
-
+    // https://placehold.co/600x400?text=Hello+World
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" },
-        { id: "6", name: "Mystic NFT #6", image: "https://via.placeholder.com/40x40/ef4444/white?text=6" },
-        { id: "7", name: "Dragon NFT #7", image: "https://via.placeholder.com/40x40/3b82f6/white?text=7" },
-        { id: "8", name: "Phoenix NFT #8", image: "https://via.placeholder.com/40x40/f97316/white?text=8" },
-        { id: "9", name: "Unicorn NFT #9", image: "https://via.placeholder.com/40x40/06b6d4/white?text=9" },
-        { id: "10", name: "Griffin NFT #10", image: "https://via.placeholder.com/40x40/84cc16/white?text=10" }
+        { id: "1", name: "Cool NFT #1", image: "https://placehold.co/40x40/6366f1/white?text=1" },
+        { id: "2", name: "Awesome NFT #2", image: "https://placeholder.co/40x40/8b5cf6/white?text=2" },
+        { id: "3", name: "Epic NFT #3", image: "https://placeholder.co/40x40/ec4899/white?text=3" },
+        { id: "4", name: "Rare NFT #4", image: "https://placeholder.co/40x40/10b981/white?text=4" },
+        { id: "5", name: "Legendary NFT #5", image: "https://placeholder.co/40x40/f59e0b/white?text=5" },
+        { id: "6", name: "Mystic NFT #6", image: "https://placeholder.co/40x40/ef4444/white?text=6" },
+        { id: "7", name: "Dragon NFT #7", image: "https://placeholder.co/40x40/3b82f6/white?text=7" },
+        { id: "8", name: "Phoenix NFT #8", image: "https://placeholder.co/40x40/f97316/white?text=8" },
+        { id: "9", name: "Unicorn NFT #9", image: "https://placeholder.co/40x40/06b6d4/white?text=9" },
+        { id: "10", name: "Griffin NFT #10", image: "https://placeholder.co/40x40/84cc16/white?text=10" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;
@@ -413,11 +413,11 @@ const NFTSelect = ({
     };
 
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" }
+        { id: "1", name: "Cool NFT #1", image: "https://placeholder.co/40x40/6366f1/white?text=1" },
+        { id: "2", name: "Awesome NFT #2", image: "https://placeholder.co/40x40/8b5cf6/white?text=2" },
+        { id: "3", name: "Epic NFT #3", image: "https://placeholder.co/40x40/ec4899/white?text=3" },
+        { id: "4", name: "Rare NFT #4", image: "https://placeholder.co/40x40/10b981/white?text=4" },
+        { id: "5", name: "Legendary NFT #5", image: "https://placeholder.co/40x40/f59e0b/white?text=5" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;

@@ -9,18 +9,18 @@ import { ethers } from 'ethers';
 import { disconnect } from '@wagmi/core'
 import { config } from '../utils/wagmi'
 
-const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9'//'0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const NFT_ABI = [
     "function symbol() public view returns (string)",
     "function setApprovalForAll(address operator, bool approved)",
     "function isApprovedForAll(address owner, address operator) view returns (bool)",
 ];
 
-const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+const BURN_MANGER_ADDRESS = '0xe906c4e51f70639ee59da0d54e37740760118cf1'//'0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const BURN_MANGER_ABI = [
-    "function createPremium(uint32[] tokenIds, uint32 update_id)"
+    "function createPremium(uint32[] tokenIds, uint32 update_id)",
+    "function getBurnFee() public view returns (uint256)",
 ];
-
 
 function BurnPage() {
     const { address, isConnected } = useAccount();
@@ -32,19 +32,51 @@ function BurnPage() {
     const callContract = async () => {
         if (!isConnected || !walletClient) return;
         try {
-            
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
-
             const burnManager = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
-            
-            // check first for approval first
-            if (await isApprovedForAll(address, BURN_MANGER_ADDRESS) === false){
+            // check if no errors occured
+            if (await nftContract.isApprovedForAll(address, BURN_MANGER_ADDRESS) === false){
                 await nftContract.setApprovalForAll(BURN_MANGER_ADDRESS, true)
             }
-            await burnManager.createPremium([...Array(10)].map((_, i) => i + 2), 2)
+            const burnFee = await burnManager.getBurnFee()
+            console.log(ethers.formatEther(burnFee))
+            const startingPoint = 12+4
+            const loopAmount = 2
+            await burnManager.createPremium([...Array(loopAmount)].map((_, i) => i + startingPoint), startingPoint+loopAmount, {
+                value: burnFee
+            })
+            
+        } catch (error) {
+            console.error("❌ Contract call failed:", error);
+        }
+    };
 
+    const newfunc2 = async () => {
+        if (!isConnected || !walletClient) return;
+        try {
+
+            const url = 'http://localhost:8000/update-requests/';
+            // Create FormData for file + data
+            const formData = new FormData();
+            formData.append('transaction_hash', '0xabc123456789abcdef');
+            formData.append('address', '9zYhGFWkUGW8Wr6zZZuayXZzBbGiyCehqgThpD9TgXEU');
+            formData.append('update_id', 1);
+            formData.append('burn_ids', JSON.stringify([101, 102])); // Stringified JSON
+            formData.append('update_name', 'phantomkid');
+
+            // File must come from an input or Blob (for browser), or fs in Node.js
+            const fileInput = document.querySelector('#file'); // <input type="file" id="file" />
+            formData.append('image', fileInput.files[0]); // Or use File/Blob directly
+
+            const response = await axios.post(url, formData, {
+            headers: {
+                'Authorization': `Bearer ${jwt}`,
+                'Content-Type': 'multipart/form-data'
+            }
+            })
+            console.log('Upload success:', response.data);
         } catch (error) {
             console.error("❌ Contract call failed:", error);
         }
@@ -76,9 +108,6 @@ function BurnPage() {
                 console.error('❌ Failed to fetch NFTs:', err);
             }
         };
-
-        console.log(nfts)
-
         fetchNFTs();
     }, [jwt]);
 
@@ -95,7 +124,7 @@ function BurnPage() {
                     < DragAndDropFileInput />
                     <TextArea />
                     {/* Burn them all */}
-                    <button className=' bg-[#50D2C1] hover:bg-cyan-500 transition-all p-2 w-32 rounded-md  mt-2'>Burn</button>
+                    <button className=' bg-[#50D2C1] hover:bg-cyan-500 transition-all p-2 w-32 rounded-md  mt-2' onClick={callContract}>Burn</button>
                 </div>
             </div>
         </div>
