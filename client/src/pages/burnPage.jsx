@@ -6,8 +6,6 @@ import { useAccount, useWalletClient } from 'wagmi';
 import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
-
-import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import { disconnect } from '@wagmi/core'
 import { config } from '../utils/wagmi'
