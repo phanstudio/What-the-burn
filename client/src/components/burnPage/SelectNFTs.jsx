@@ -10,7 +10,9 @@ const NFTMultiSelect = ({
     disabled = false,
     unavailableNFTs = [],
     error = null,
-    required = false
+    required = false,
+    name = "selectedNFTs",
+    onValidationChange
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFTs, setSelectedNFTs] = useState([]);
@@ -32,14 +34,21 @@ const NFTMultiSelect = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen]);
 
-    // Validate selection
     const validateSelection = (selection) => {
-        if (required && (!selection || selection.length === 0)) {
-            setLocalError('Please select at least one NFT');
-            return false;
+        const isValid = !(required && (!selection || selection.length === 0));
+        const errorMessage = isValid ? '' : 'Please select at least one NFT';
+        setLocalError(errorMessage);
+
+        if (onValidationChange) {
+            onValidationChange({
+                name,
+                isValid,
+                error: errorMessage,
+                value: selection
+            });
         }
-        setLocalError('');
-        return true;
+
+        return isValid;
     };
 
     const isSelected = (nft) => {
@@ -91,21 +100,17 @@ const NFTMultiSelect = ({
     };
 
     const getDisplayText = () => {
-        if (selectedNFTs.length === 0) {
-            return placeholder;
-        }
-        if (selectedNFTs.length === 1) {
-            return selectedNFTs[0].name;
-        }
+        if (selectedNFTs.length === 0) return placeholder;
+        if (selectedNFTs.length === 1) return selectedNFTs[0].name;
         return `${selectedNFTs[0].name} (+${selectedNFTs.length - 1} more)`;
     };
 
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" }
+        { id: "1", name: "Cool NFT #1", image: "https://dummyimage.com/40x40/6366f1/white?text=1" },
+        { id: "2", name: "Awesome NFT #2", image: "https://dummyimage.com/40x40/8b5cf6/white?text=2" },
+        { id: "3", name: "Epic NFT #3", image: "https://dummyimage.com/40x40/ec4899/white?text=3" },
+        { id: "4", name: "Rare NFT #4", image: "https://dummyimage.com/40x40/10b981/white?text=4" },
+        { id: "5", name: "Legendary NFT #5", image: "https://dummyimage.com/40x40/f59e0b/white?text=5" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;
@@ -113,7 +118,7 @@ const NFTMultiSelect = ({
 
     return (
         <div className={`relative w-full max-w-md ${className}`} ref={dropdownRef}>
-            {/* Main Select Button */}
+            {/* Main Button */}
             <button
                 onClick={toggleDropdown}
                 disabled={disabled}
@@ -346,11 +351,11 @@ const NFTSelect = ({
     };
 
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" }
+        { id: "1", name: "Cool NFT #1", image: "https://dummyimage.com/40x40/6366f1/white?text=1" },
+        { id: "2", name: "Awesome NFT #2", image: "https://dummyimage.com/40x40/8b5cf6/white?text=2" },
+        { id: "3", name: "Epic NFT #3", image: "https://dummyimage.com/40x40/ec4899/white?text=3" },
+        { id: "4", name: "Rare NFT #4", image: "https://dummyimage.com/40x40/10b981/white?text=4" },
+        { id: "5", name: "Legendary NFT #5", image: "https://dummyimage.com/40x40/f59e0b/white?text=5" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;
@@ -623,7 +628,7 @@ const Selector = forwardRef(({
                                     </span>
                                 </p>
                                 <p className="text-white">Status:
-                                    <span className={`ml-2 font-semibold ${multipleSelection.length > 0 && singleSelection ? 'text-green-400' : 'text-yellow-400'}`}>
+                                    <span className={`ml-2 font-semibold ${multipleSelection.length > 10 && singleSelection ? 'text-green-400' : 'text-yellow-400'}`}>
                                         {multipleSelection.length > 0 && singleSelection ? 'Ready' : 'Incomplete'}
                                     </span>
                                 </p>

@@ -113,18 +113,18 @@ const NFTMultiSelect = ({
         }
         return `${selectedNFTs[0].name} (+${selectedNFTs.length - 1} more)`;
     };
-
+    // https://placehold.co/600x400?text=Hello+World
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" },
-        { id: "6", name: "Mystic NFT #6", image: "https://via.placeholder.com/40x40/ef4444/white?text=6" },
-        { id: "7", name: "Dragon NFT #7", image: "https://via.placeholder.com/40x40/3b82f6/white?text=7" },
-        { id: "8", name: "Phoenix NFT #8", image: "https://via.placeholder.com/40x40/f97316/white?text=8" },
-        { id: "9", name: "Unicorn NFT #9", image: "https://via.placeholder.com/40x40/06b6d4/white?text=9" },
-        { id: "10", name: "Griffin NFT #10", image: "https://via.placeholder.com/40x40/84cc16/white?text=10" }
+        { id: "1", name: "Cool NFT #1", image: "https://placehold.co/40x40/6366f1/white?text=1" },
+        { id: "2", name: "Awesome NFT #2", image: "https://placeholder.co/40x40/8b5cf6/white?text=2" },
+        { id: "3", name: "Epic NFT #3", image: "https://placeholder.co/40x40/ec4899/white?text=3" },
+        { id: "4", name: "Rare NFT #4", image: "https://placeholder.co/40x40/10b981/white?text=4" },
+        { id: "5", name: "Legendary NFT #5", image: "https://placeholder.co/40x40/f59e0b/white?text=5" },
+        { id: "6", name: "Mystic NFT #6", image: "https://placeholder.co/40x40/ef4444/white?text=6" },
+        { id: "7", name: "Dragon NFT #7", image: "https://placeholder.co/40x40/3b82f6/white?text=7" },
+        { id: "8", name: "Phoenix NFT #8", image: "https://placeholder.co/40x40/f97316/white?text=8" },
+        { id: "9", name: "Unicorn NFT #9", image: "https://placeholder.co/40x40/06b6d4/white?text=9" },
+        { id: "10", name: "Griffin NFT #10", image: "https://placeholder.co/40x40/84cc16/white?text=10" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;
@@ -332,7 +332,10 @@ const NFTMultiSelect = ({
     );
 };
 
-// Single Select NFT Component
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronDown, X, AlertCircle, Image } from 'lucide-react';
+
+// Single Select NFT Component with Validation
 const NFTSelect = ({
     nfts = [],
     onSelect,
@@ -340,13 +343,18 @@ const NFTSelect = ({
     className = "",
     disabled = false,
     unavailableNFTs = [],
-    error = null,
+    error = error,
     required = false,
-    value = null
+    value = null,
+    name = "nftSelect",
+    onValidationChange = null,
+    minSelections = null,
+    maxSelections = null
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFT, setSelectedNFT] = useState(value);
     const [localError, setLocalError] = useState('');
+    const [hasBeenTouched, setHasBeenTouched] = useState(false);
     const dropdownRef = useRef(null);
 
     // Close dropdown when clicking outside
@@ -369,16 +377,57 @@ const NFTSelect = ({
         setSelectedNFT(value);
     }, [value]);
 
-    // Validate selection
+    // Validation function
     const validateSelection = (selection) => {
+        let isValid = true;
+        let errorMessage = '';
+
+        // Required validation
         if (required && !selection) {
-            setLocalError('Please select an NFT');
-            return false;
+            isValid = false;
+            errorMessage = 'Please select an NFT';
         }
 
-        setLocalError('');
-        return true;
+        // Min selections validation (for consistency with multi-select)
+        if (minSelections && minSelections > 0 && !selection) {
+            isValid = false;
+            errorMessage = `Please select at least ${minSelections} NFT${minSelections > 1 ? 's' : ''}`;
+        }
+
+        // Custom validation for unavailable NFTs
+        if (selection && isUnavailable(selection)) {
+            isValid = false;
+            errorMessage = 'Selected NFT is not available';
+        }
+
+        setLocalError(errorMessage);
+
+        // Call parent validation callback
+        if (onValidationChange) {
+            onValidationChange({
+                name,
+                isValid,
+                error: errorMessage,
+                value: selection
+            });
+        }
+
+        return isValid;
     };
+
+    // Run validation when selection changes or component mounts
+    useEffect(() => {
+        if (hasBeenTouched || selectedNFT !== null) {
+            validateSelection(selectedNFT);
+        }
+    }, [selectedNFT, required, minSelections, unavailableNFTs, hasBeenTouched]);
+
+    // Initial validation on mount if there's a value
+    useEffect(() => {
+        if (value !== null) {
+            validateSelection(value);
+        }
+    }, []);
 
     const isUnavailable = (nft) => {
         return unavailableNFTs.some(unavailable => unavailable.id === nft.id);
@@ -387,9 +436,11 @@ const NFTSelect = ({
     const handleNFTClick = (nft) => {
         if (isUnavailable(nft)) return;
 
+        setHasBeenTouched(true);
         setSelectedNFT(nft);
         setIsOpen(false);
-        validateSelection(nft);
+
+        const isValid = validateSelection(nft);
 
         if (onSelect) {
             onSelect(nft);
@@ -398,8 +449,10 @@ const NFTSelect = ({
 
     const clearSelection = (e) => {
         e.stopPropagation();
+        setHasBeenTouched(true);
         setSelectedNFT(null);
-        validateSelection(null);
+
+        const isValid = validateSelection(null);
 
         if (onSelect) {
             onSelect(null);
@@ -408,32 +461,42 @@ const NFTSelect = ({
 
     const toggleDropdown = () => {
         if (!disabled) {
+            setHasBeenTouched(true);
             setIsOpen(!isOpen);
         }
     };
 
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" }
+        { id: "1", name: "Cool NFT #1", image: "https://placeholder.co/40x40/6366f1/white?text=1" },
+        { id: "2", name: "Awesome NFT #2", image: "https://placeholder.co/40x40/8b5cf6/white?text=2" },
+        { id: "3", name: "Epic NFT #3", image: "https://placeholder.co/40x40/ec4899/white?text=3" },
+        { id: "4", name: "Rare NFT #4", image: "https://placeholder.co/40x40/10b981/white?text=4" },
+        { id: "5", name: "Legendary NFT #5", image: "https://placeholder.co/40x40/f59e0b/white?text=5" }
     ];
 
     const nftList = nfts.length > 0 ? nfts : sampleNFTs;
     const hasError = error || localError;
+    const showError = hasError && (hasBeenTouched || error); // Only show error after interaction or if passed from parent
 
     return (
         <div className={`relative w-full ${className}`} ref={dropdownRef}>
+            {/* Label */}
+            <div className="mb-2">
+                <label className="block text-sm font-medium text-gray-300">
+                    Select NFT to Burn
+                    {required && <span className="text-red-400 ml-1">*</span>}
+                </label>
+            </div>
+
             {/* Main Select Button */}
             <button
                 onClick={toggleDropdown}
                 disabled={disabled}
-                className={`w-full flex items-center justify-between p-3 border rounded-lg bg-transparent transition-all duration-200 ${hasError
+                className={`w-full flex items-center justify-between p-3 border rounded-lg bg-transparent transition-all duration-200 ${showError
                     ? 'border-red-400 focus:ring-red-500'
                     : disabled
                         ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                        : 'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                        : 'border-gray-600 hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-[#50D2C1] bg-[#2A3439]'
                     }`}
             >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -446,21 +509,21 @@ const NFTSelect = ({
                                     className="w-8 h-8 rounded-md object-cover"
                                 />
                             ) : (
-                                <div className="w-8 h-8 bg-gray-200 rounded-md flex items-center justify-center">
+                                <div className="w-8 h-8 bg-gray-600 rounded-md flex items-center justify-center">
                                     <Image size={16} className="text-gray-400" />
                                 </div>
                             )}
                             <div className="text-left min-w-0 flex-1">
-                                <div className="font-medium text-gray-900 truncate">
+                                <div className="font-medium text-white truncate">
                                     {selectedNFT.name}
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-gray-400">
                                     ID: {selectedNFT.id}
                                 </div>
                             </div>
                         </>
                     ) : (
-                        <span className={hasError ? "text-red-400" : "text-gray-500"}>
+                        <span className={showError ? "text-red-400" : "text-gray-400"}>
                             {placeholder}
                             {required && <span className="text-red-400 ml-1">*</span>}
                         </span>
@@ -470,23 +533,24 @@ const NFTSelect = ({
                     {selectedNFT && !disabled && (
                         <button
                             onClick={clearSelection}
-                            className="p-1 hover:bg-gray-100 rounded-full"
+                            className="p-1 hover:bg-gray-600 rounded-full"
+                            type="button"
                         >
                             <X size={16} className="text-gray-400" />
                         </button>
                     )}
-                    {hasError && <AlertCircle size={16} className="text-red-400" />}
+                    {showError && <AlertCircle size={16} className="text-red-400" />}
                     <ChevronDown
                         size={20}
-                        className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${disabled ? 'text-gray-300' : hasError ? 'text-red-400' : 'text-gray-400'
+                        className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${disabled ? 'text-gray-500' : showError ? 'text-red-400' : 'text-gray-400'
                             }`}
                     />
                 </div>
             </button>
 
             {/* Error Message */}
-            {hasError && (
-                <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
+            {showError && (
+                <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
                     <AlertCircle size={14} />
                     {error || localError}
                 </p>
@@ -494,9 +558,9 @@ const NFTSelect = ({
 
             {/* Dropdown */}
             {isOpen && !disabled && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-[#2A3439] border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {nftList.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">
+                        <div className="p-4 text-center text-gray-400">
                             <AlertCircle size={24} className="mx-auto mb-2 text-red-400" />
                             No NFTs available
                         </div>
@@ -510,18 +574,18 @@ const NFTSelect = ({
                                     key={nft.id}
                                     onClick={() => handleNFTClick(nft)}
                                     disabled={unavailable}
-                                    className={`w-full flex items-center space-x-3 p-3 text-left transition-colors border-b border-gray-100 last:border-b-0 ${unavailable
-                                        ? 'bg-red-50 opacity-60 cursor-not-allowed'
+                                    className={`w-full flex items-center space-x-3 p-3 text-left transition-colors border-b border-gray-600 last:border-b-0 ${unavailable
+                                        ? 'bg-red-900/20 opacity-60 cursor-not-allowed'
                                         : selected
-                                            ? 'bg-blue-50 hover:bg-blue-100'
-                                            : 'hover:bg-gray-50'
+                                            ? 'bg-[#50D2C1]/20 hover:bg-[#50D2C1]/30'
+                                            : 'hover:bg-gray-700'
                                         }`}
                                 >
                                     <div className={`w-5 h-5 border-2 rounded-full flex items-center justify-center ${unavailable
                                         ? 'bg-red-200 border-red-300'
                                         : selected
-                                            ? 'bg-blue-500 border-blue-500'
-                                            : 'border-gray-300'
+                                            ? 'bg-[#50D2C1] border-[#50D2C1]'
+                                            : 'border-gray-500'
                                         }`}>
                                         {selected && <div className="w-2 h-2 bg-white rounded-full" />}
                                         {unavailable && <X size={14} className="text-red-600" />}
@@ -534,26 +598,26 @@ const NFTSelect = ({
                                             className={`w-10 h-10 rounded-md object-cover ${unavailable ? 'grayscale' : ''}`}
                                         />
                                     ) : (
-                                        <div className={`w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center ${unavailable ? 'grayscale' : ''}`}>
+                                        <div className={`w-10 h-10 bg-gray-600 rounded-md flex items-center justify-center ${unavailable ? 'grayscale' : ''}`}>
                                             <Image size={18} className="text-[#50D2C1]" />
                                         </div>
                                     )}
 
                                     <div className="flex-1 min-w-0">
                                         <div className={`font-medium truncate flex items-center gap-2 ${unavailable
-                                            ? 'text-red-600'
+                                            ? 'text-red-400'
                                             : selected
-                                                ? 'text-blue-900'
-                                                : 'text-gray-900'
+                                                ? 'text-[#50D2C1]'
+                                                : 'text-white'
                                             }`}>
                                             {nft.name}
                                             {unavailable && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Unavailable</span>}
                                         </div>
                                         <div className={`text-sm ${unavailable
-                                            ? 'text-red-500'
+                                            ? 'text-red-400'
                                             : selected
-                                                ? 'text-blue-700'
-                                                : 'text-gray-500'
+                                                ? 'text-[#50D2C1]/80'
+                                                : 'text-gray-400'
                                             }`}>
                                             ID: {nft.id}
                                         </div>
@@ -563,6 +627,13 @@ const NFTSelect = ({
                         })
                     )}
                 </div>
+            )}
+
+            {/* Validation Info */}
+            {!showError && required && hasBeenTouched && (
+                <p className="text-gray-500 text-xs mt-1">
+                    This field is required
+                </p>
             )}
         </div>
     );

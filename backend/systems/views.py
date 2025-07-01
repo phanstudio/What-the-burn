@@ -122,7 +122,6 @@ class Gettokens(APIView): # remove an error this
         }}
         """
         response = requests.post(url, json={'query': query})
-        logger.info(response.status_code)
         # Check response
         if response.status_code == 200:
             response_json = response.json()
@@ -131,8 +130,6 @@ class Gettokens(APIView): # remove an error this
                 "image":f"{image_url}{entry["tokenId"]}.png",
                 "name": f"What?! {entry["tokenId"]}" # can make dynamic or store
                 } for entry in response_json["data"]["transfers"]]
-            print(token_ids)
-            logger.info(response.json())
             return token_ids
         else:
             print("Error:", response.status_code, response.text)
@@ -261,7 +258,6 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
     def download_new(self, request):
         """Download only those not yet downloaded"""
         instances = Update_Request.objects.filter(downloaded=False)
-        print(instances)
         zip_buffer = self.generate_zip(instances)
         return self._return_zip(zip_buffer, 'new_update_requests.zip')
 
