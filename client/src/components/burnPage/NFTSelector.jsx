@@ -67,7 +67,7 @@ const NFTSelector = forwardRef(({
                 <div className="bg-transparent border border-[#50D2C1] p-6 rounded-lg shadow">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-[#50D2C1]">
-                            NFTs for Burning (Max {maxSelections || 10})
+                            NFTs for Burning (Min {maxSelections || 10})
                         </h2>
                         <div className="text-sm text-gray-400">
                             {multipleSelection.length}/{maxSelections || 10} selected

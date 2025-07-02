@@ -110,7 +110,7 @@ const NFTMultiSelect = ({
                 onClick={toggleDropdown}
                 disabled={disabled}
                 className={`w-full flex items-center justify-between p-3 border rounded-lg bg-transparent transition-all duration-200 ${disabled ? 'border-gray-200 bg-gray-50 cursor-not-allowed' :
-                        'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    'border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
                     }`}
             >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -198,12 +198,12 @@ const NFTMultiSelect = ({
                                         onClick={() => handleNFTClick(nft)}
                                         disabled={!canSelect}
                                         className={`w-full flex items-center space-x-3 p-3 text-left transition-colors border-b border-gray-100 last:border-b-0 ${unavailable ? 'bg-red-50 opacity-60 cursor-not-allowed' :
-                                                selected ? 'bg-blue-50 hover:bg-blue-100' :
-                                                    canSelect ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                                            selected ? 'bg-blue-50 hover:bg-blue-100' :
+                                                canSelect ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
                                             }`}
                                     >
                                         <div className={`w-5 h-5 border-2 rounded flex items-center justify-center ${unavailable ? 'bg-red-200 border-red-300' :
-                                                selected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                                            selected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
                                             }`}>
                                             {selected && <Check size={14} className="text-white" />}
                                             {unavailable && <X size={14} className="text-red-600" />}
@@ -223,13 +223,13 @@ const NFTMultiSelect = ({
 
                                         <div className="flex-1 min-w-0">
                                             <div className={`font-medium truncate flex items-center gap-2 ${unavailable ? 'text-red-600' :
-                                                    selected ? 'text-blue-900' : 'text-gray-900'
+                                                selected ? 'text-blue-900' : 'text-gray-900'
                                                 }`}>
                                                 {nft.name}
                                                 {unavailable && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Unavailable</span>}
                                             </div>
                                             <div className={`text-sm ${unavailable ? 'text-red-500' :
-                                                    selected ? 'text-blue-700' : 'text-gray-500'
+                                                selected ? 'text-blue-700' : 'text-gray-500'
                                                 }`}>
                                                 ID: {nft.id}
                                             </div>
@@ -241,6 +241,7 @@ const NFTMultiSelect = ({
                     )}
                 </div>
             )}
+
         </div>
     );
 };

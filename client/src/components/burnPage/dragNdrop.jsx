@@ -1,21 +1,33 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, AlertCircle, FileText, Check } from 'lucide-react';
 
-// Drag and Drop File Input Component
 export const DragAndDropFileInput = ({
     onFileUpload,
     error = null,
     required = false,
     acceptedTypes = ['image/*', '.pdf', '.doc', '.docx'],
     maxSize = 10 * 1024 * 1024, // 10MB
-    className = ""
+    className = "",
+    initialFiles = [] // Added to support pre-populated files from BurnPage
 }) => {
     const [isDragOver, setIsDragOver] = useState(false);
-    const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploadedFiles, setUploadedFiles] = useState(initialFiles);
     const [localError, setLocalError] = useState('');
     const fileInputRef = useRef(null);
 
+    // Sync with parent component's state
+    useEffect(() => {
+        if (initialFiles && !uploadedFiles.length && initialFiles.length) {
+            setUploadedFiles(initialFiles);
+        }
+    }, [initialFiles]);
+
     const validateFile = (file) => {
+        if (!file) {
+            setLocalError('Please select a file');
+            return false;
+        }
+
         // Check file size
         if (file.size > maxSize) {
             setLocalError(`File size must be less than ${Math.round(maxSize / 1024 / 1024)}MB`);
@@ -37,17 +49,32 @@ export const DragAndDropFileInput = ({
             return false;
         }
 
-        setLocalError('');
         return true;
     };
 
-    const handleFileSelect = (file) => {
-        if (validateFile(file)) {
-            setUploadedFile(file);
-            if (onFileUpload) {
-                onFileUpload(file);
+    const handleFileSelect = (files) => {
+        if (files.length === 0) {
+            setLocalError(required ? 'Please select at least one file' : '');
+            setUploadedFiles([]);
+            if (onFileUpload) onFileUpload([]);
+            return;
+        }
+
+        const validFiles = [];
+        for (const file of files) {
+            if (validateFile(file)) {
+                validFiles.push(file);
+            } else {
+                // Stop on first invalid file
+                return;
             }
         }
+
+        setUploadedFiles(validFiles);
+        if (onFileUpload) {
+            onFileUpload(validFiles);
+        }
+        setLocalError('');
     };
 
     const handleDragOver = (e) => {
@@ -63,28 +90,27 @@ export const DragAndDropFileInput = ({
     const handleDrop = (e) => {
         e.preventDefault();
         setIsDragOver(false);
-
         const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-            handleFileSelect(files[0]);
-        }
+        handleFileSelect(files);
     };
 
     const handleFileInputChange = (e) => {
         const files = Array.from(e.target.files);
-        if (files.length > 0) {
-            handleFileSelect(files[0]);
-        }
+        handleFileSelect(files);
     };
 
-    const removeFile = () => {
-        setUploadedFile(null);
+    const removeFile = (index) => {
+        const newFiles = [...uploadedFiles];
+        newFiles.splice(index, 1);
+        setUploadedFiles(newFiles);
         setLocalError('');
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+
         if (onFileUpload) {
-            onFileUpload(null);
+            onFileUpload(newFiles);
         }
     };
 
@@ -99,7 +125,7 @@ export const DragAndDropFileInput = ({
                 </label>
             </div>
 
-            {!uploadedFile ? (
+            {uploadedFiles.length === 0 ? (
                 <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -140,27 +166,31 @@ export const DragAndDropFileInput = ({
                     </div>
                 </div>
             ) : (
-                <div className="border border-[#50D2C1] rounded-lg p-4 bg-[#50D2C1]/5">
-                    <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-green-100 rounded-full">
-                            <FileText size={20} className="text-green-600" />
+                <div className="space-y-2">
+                    {uploadedFiles.map((file, index) => (
+                        <div key={index} className="border border-[#50D2C1] rounded-lg p-4 bg-[#50D2C1]/5">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-green-100 rounded-full">
+                                    <FileText size={20} className="text-green-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white font-medium truncate">{file.name}</p>
+                                    <p className="text-gray-400 text-sm">
+                                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Check size={20} className="text-green-500" />
+                                    <button
+                                        onClick={() => removeFile(index)}
+                                        className="p-1 hover:bg-red-100 rounded-full transition-colors"
+                                    >
+                                        <X size={16} className="text-red-500" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-white font-medium truncate">{uploadedFile.name}</p>
-                            <p className="text-gray-400 text-sm">
-                                {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Check size={20} className="text-green-500" />
-                            <button
-                                onClick={removeFile}
-                                className="p-1 hover:bg-red-100 rounded-full transition-colors"
-                            >
-                                <X size={16} className="text-red-500" />
-                            </button>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             )}
 

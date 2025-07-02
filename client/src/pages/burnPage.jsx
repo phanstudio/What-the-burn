@@ -6,23 +6,23 @@ import { useAccount, useWalletClient } from 'wagmi';
 import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
-import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import { disconnect } from '@wagmi/core'
 import { config } from '../utils/wagmi'
 
-const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+
 const NFT_ABI = [
     "function symbol() public view returns (string)",
     "function setApprovalForAll(address operator, bool approved)",
     "function isApprovedForAll(address owner, address operator) view returns (bool)",
 ];
 
-const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
+const BURN_MANGER_ADDRESS = '0xe906c4e51F70639EE59DA0D54e37740760118Cf1';//'0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';
 const BURN_MANGER_ABI = [
-    "function createPremium(uint32[] tokenIds, uint32 update_id)"
+    "function createPremium(uint32[] tokenIds, uint32 update_id)",
+    "function getBurnFee() public view returns (uint256)",
+    "function minimumBurnAmount() public view returns (uint16)"
 ];
-
 
 const BurnPage = () => {
     const { address, isConnected } = useAccount();
@@ -44,24 +44,62 @@ const BurnPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const callContract = async () => {
+    const handelUpdateBackend = async () => {
         if (!isConnected || !walletClient) return;
         try {
+            const burniIds = formData.nftSelections.multiple.map(nft => Number(nft.id))
+            const updateId = Number(formData.nftSelections.single.id)
+
+            const startingPoint = 51+4+4+4+4
+            const loopAmount = 3
+            const burniIds2 = [...Array(loopAmount)].map((_, i) => i + startingPoint)
+            const updateId2 = startingPoint+loopAmount
+
+            const txHash = await callContract(burniIds2, updateId2)
+            const url = 'http://localhost:8000/update-requests/';
             
+            const newForm = new FormData();
+            newForm.append('transaction_hash', txHash);
+            newForm.append('address', address);
+            newForm.append('description', formData.description);
+            newForm.append('update_id', updateId);
+            newForm.append('burn_ids', JSON.stringify(
+                burniIds
+            ));
+            newForm.append('update_name', nftName);
+            newForm.append('image', formData.uploadedFiles[0]);
+            
+            const response = await axios.post(url, newForm, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            console.log('Upload success:', response.data);
+        } catch (error) {
+            console.error("❌ Backend call failed:", error);
+        }
+    };
+
+    const callContract = async (burnIds, updateId) => {
+        if (!isConnected || !walletClient) return;
+        try {
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
 
             const burnManager = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
-            
+
             // check first for approval first
-            if (await isApprovedForAll(address, BURN_MANGER_ADDRESS) === false){
+            if (await nftContract.isApprovedForAll(address, BURN_MANGER_ADDRESS) === false) {
                 await nftContract.setApprovalForAll(BURN_MANGER_ADDRESS, true)
             }
-            await burnManager.createPremium([...Array(10)].map((_, i) => i + 2), 2)
-
+            const burnFee = await burnManager.getBurnFee()
+            // console.log(await burnManager.minimumBurnAmount());
+            const tx = await burnManager.createPremium(burnIds, updateId, { value: burnFee });
+            return tx.hash
         } catch (error) {
-            console.error("❌ Contract call failed:", error);
+            throw new Error(`❌ Contract call failed: ${error}`);
         }
     };
 
@@ -90,18 +128,113 @@ const BurnPage = () => {
                 console.error('❌ Failed to fetch NFTs:', err);
             }
         };
+
         fetchNFTs();
     }, [jwt]);
 
+    const handleDescriptionChange = (value) => {
+        setFormData(prev => ({ ...prev, description: value }));
+        if (errors.description) {
+            setErrors(prev => ({ ...prev, description: undefined }));
+        }
+    };
+
+    const handleNFTSelection = (selectionData) => {
+        const nftSelections = {
+            multiple: selectionData.multiple || [],
+            single: selectionData.single || null
+        };
+
+        setFormData(prev => ({ ...prev, nftSelections }));
+        if (errors.nftSelections) {
+            setErrors(prev => ({ ...prev, nftSelections: undefined }));
+        }
+    };
+
+    const handleFileUpload = (uploadedFiles) => {
+        // Convert to array if single file
+        const filesArray = Array.isArray(uploadedFiles) ? uploadedFiles : (uploadedFiles ? [uploadedFiles] : []);
+        setFormData(prev => ({ ...prev, uploadedFiles: filesArray }));
+        if (errors.uploadedFiles) {
+            setErrors(prev => ({ ...prev, uploadedFiles: undefined }));
+        }
+    };
+
+    const handleBurn = async () => {
+        const newErrors = {};
+
+        // Validate multiple NFT selections
+        if (!formData.nftSelections.multiple || formData.nftSelections.multiple.length === 0) {
+            newErrors.nftSelections = 'Select at least one NFTs.';
+        } else if (formData.nftSelections.multiple.length > 10) {
+            newErrors.nftSelections = 'You can select a maximum of 10 NFTs.';
+        }
+
+        // Validate NFT selections
+        if (!formData.nftSelections.multiple.length) {
+            newErrors.nftSelections = 'Select at least one NFT.';
+        }
+
+        // Validate description
+        if (!formData.description || formData.description.trim().length < 10) {
+            newErrors.description = 'Description must be at least 10 characters.';
+        }
+
+        // Validate NFT name
+        if (!nftName || nftName.trim().length < 3) {
+            newErrors.nftName = 'NFT name must be at least 3 characters.';
+        }
+
+        // Validate files
+        if (formData.uploadedFiles.length === 0) {
+            newErrors.uploadedFiles = 'Please upload at least one file.';
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            console.log('🔥 Starting burn process...', {
+                nftName,
+                description: formData.description,
+                multipleNFTs: formData.nftSelections.multiple,
+                featuredNFT: formData.nftSelections.single,
+                files: formData.uploadedFiles
+            });
+            await handelUpdateBackend();
+
+            console.log('✅ Burn successful!');
+
+            // Reset form
+            setFormData({
+                description: '',
+                nftSelections: { multiple: [], single: null },
+                uploadedFiles: []
+            });
+            setNftName('');
+            setErrors({});
+
+            // Optionally navigate to success page
+            // navigate('/success');
+
+        } catch (error) {
+            console.error('❌ Burn failed:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
-        <div className="p-6 flex flex-col bg-[#0F1A1F] min-h-screen text-white">
+        <div className=" px-74 py-6 flex flex-col bg-[#0F1A1F] min-h-screen text-white">
             <div>
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold">Burn NFTs</h1>
                 </div>
-                <p className="mb-4">
-                    Connected Wallet: <span className="font-mono text-wrap text-emerald-400">{address}</span>
-                </p>
             </div>
 
             <div className="flex flex-col mx-auto w-full max-w-3xl bg-[#1A2429] p-6 rounded-lg shadow-lg">
@@ -110,28 +243,45 @@ const BurnPage = () => {
                         nfts={nfts}
                         onSelect={handleNFTSelection}
                         maxSelections={10}
+                        error={errors.nftSelections}
                     />
+
                     {errors.nftSelections && (
                         <p className="text-red-400 text-sm">{errors.nftSelections}</p>
                     )}
 
-                    <DragAndDropFileInput onFileUpload={handleFileUpload} />
+                    <DragAndDropFileInput
+                        onFileUpload={handleFileUpload}
+                        required={true}
+                        error={errors.uploadedFiles}
+                        initialFiles={formData.uploadedFiles}
+                    />
+                    {/* {errors.uploadedFiles && (
+                        <p className="text-red-400 text-sm">{errors.uploadedFiles}</p>
+                    )} */}
 
                     <NFTNameInput
                         value={nftName}
-                        onChange={setNftName}
+                        onChange={(value) => {
+                            setNftName(value);
+                            if (errors.nftName) {
+                                setErrors(prev => ({ ...prev, nftName: undefined }));
+                            }
+                        }}
                         minLength={3}
                         maxLength={50}
                         placeholder="Enter your NFT name..."
+                        error={errors.nftName}
                     />
                     {errors.nftName && (
                         <p className="text-red-400 text-sm">{errors.nftName}</p>
                     )}
 
                     <TextArea
-                        placeholder="Enter a description..."
+                        placeholder="Enter a description (minimum 10 characters)..."
                         value={formData.description}
                         onChange={handleDescriptionChange}
+                        error={errors.description}
                     />
                     {errors.description && (
                         <p className="text-red-400 text-sm">{errors.description}</p>

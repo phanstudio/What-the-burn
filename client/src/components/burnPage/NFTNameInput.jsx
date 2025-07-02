@@ -39,9 +39,9 @@ const NFTNameInput = forwardRef(({
         }
 
         // Check for only whitespace
-        if (trimmedValue !== inputValue && inputValue.length > 0) {
-            errors.push('NFT name cannot contain only whitespace');
-        }
+        // if (trimmedValue !== inputValue && inputValue.length > 0) {
+        //     errors.push('NFT name cannot contain whitespace');
+        // }
 
         return errors;
     };
