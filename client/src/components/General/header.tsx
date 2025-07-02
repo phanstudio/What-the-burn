@@ -58,6 +58,11 @@ export default function Header() {
 			{mobileMenuOpen && (
 				<div className='md:hidden mt-4 flex flex-col items-start w-full max-w-xs bg-custom-dark-blue rounded-lg shadow-lg px-4 py-3 space-y-3'>
 					{/* Navigation links dropdown */}
+					{isConnected && (
+						<Link to='/admin/dashboard' className='mr-2 bg-[#50D2C1] text-center p-2 text-gray-300 hover:text-white rounded-lg transition-colors duration-300'>
+							Admin Dashboard
+						</Link>
+					)}
 					<ConnectButton />
 					{/* Icons and wallet button */}
 					<div className='flex items-center gap-4 pt-2 border-t border-gray-700 w-full'>

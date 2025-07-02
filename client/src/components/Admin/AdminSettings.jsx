@@ -9,6 +9,7 @@ import {
 import axios from 'axios';
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
+import { useNavigate, } from 'react-router-dom';
 
 const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const BURN_MANGER_ABI = [
@@ -30,10 +31,12 @@ const AdminSettings = () => {
         createPrice: ''
     });
 
+
     // UI state
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
     const jwt = sessionStorage.getItem('jwt');
+    const navigate = useNavigate();
 
     const { _, isConnected } = useAccount();
     const { data: walletClient } = useWalletClient();
@@ -54,6 +57,13 @@ const AdminSettings = () => {
             console.error("❌ Contract call failed:", error);
         }
     };
+
+    useEffect(() => {
+        if (!isConnected) {
+            sessionStorage.removeItem('jwt');
+            navigate('/', { replace: true });
+        }
+    }, [isConnected, navigate]);
 
     const handleInputChange = (field, value) => {
         // Only allow numbers and decimal points
