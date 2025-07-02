@@ -87,7 +87,8 @@ class UpdateRequestSerializer(serializers.ModelSerializer):
         model = Update_Request
         fields = [
             'transaction_hash', 'address', 'update_id', 'burn_ids', 'created_at',
-            'update_name', 'image', 'image_url', 'image_small', 'downloaded'
+            'update_name', 'image', 'image_url', 'image_small', 'downloaded', 
+            'description',
         ]
 
     def get_image_url(self, obj):

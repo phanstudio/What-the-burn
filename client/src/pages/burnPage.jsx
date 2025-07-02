@@ -17,9 +17,11 @@ const NFT_ABI = [
     "function isApprovedForAll(address owner, address operator) view returns (bool)",
 ];
 
-const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';
+const BURN_MANGER_ADDRESS = '0xe906c4e51F70639EE59DA0D54e37740760118Cf1';//'0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';
 const BURN_MANGER_ABI = [
-    "function createPremium(uint32[] tokenIds, uint32 update_id)"
+    "function createPremium(uint32[] tokenIds, uint32 update_id)",
+    "function getBurnFee() public view returns (uint256)",
+    "function minimumBurnAmount() public view returns (uint16)"
 ];
 
 const BurnPage = () => {
@@ -42,7 +44,44 @@ const BurnPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const callContract = async () => {
+    const handelUpdateBackend = async () => {
+        if (!isConnected || !walletClient) return;
+        try {
+            const burniIds = formData.nftSelections.multiple.map(nft => Number(nft.id))
+            const updateId = Number(formData.nftSelections.single.id)
+
+            const startingPoint = 51+4+4+4+4
+            const loopAmount = 3
+            const burniIds2 = [...Array(loopAmount)].map((_, i) => i + startingPoint)
+            const updateId2 = startingPoint+loopAmount
+
+            const txHash = await callContract(burniIds2, updateId2)
+            const url = 'http://localhost:8000/update-requests/';
+            
+            const newForm = new FormData();
+            newForm.append('transaction_hash', txHash);
+            newForm.append('address', address);
+            newForm.append('description', formData.description);
+            newForm.append('update_id', updateId);
+            newForm.append('burn_ids', JSON.stringify(
+                burniIds
+            ));
+            newForm.append('update_name', nftName);
+            newForm.append('image', formData.uploadedFiles[0]);
+            
+            const response = await axios.post(url, newForm, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            console.log('Upload success:', response.data);
+        } catch (error) {
+            console.error("❌ Backend call failed:", error);
+        }
+    };
+
+    const callContract = async (burnIds, updateId) => {
         if (!isConnected || !walletClient) return;
         try {
             const provider = new ethers.BrowserProvider(walletClient.transport);
@@ -55,10 +94,12 @@ const BurnPage = () => {
             if (await nftContract.isApprovedForAll(address, BURN_MANGER_ADDRESS) === false) {
                 await nftContract.setApprovalForAll(BURN_MANGER_ADDRESS, true)
             }
-            await burnManager.createPremium([...Array(10)].map((_, i) => i + 2), 2)
-
+            const burnFee = await burnManager.getBurnFee()
+            // console.log(await burnManager.minimumBurnAmount());
+            const tx = await burnManager.createPremium(burnIds, updateId, { value: burnFee });
+            return tx.hash
         } catch (error) {
-            console.error("❌ Contract call failed:", error);
+            throw new Error(`❌ Contract call failed: ${error}`);
         }
     };
 
@@ -165,9 +206,7 @@ const BurnPage = () => {
                 featuredNFT: formData.nftSelections.single,
                 files: formData.uploadedFiles
             });
-
-            // Here you would typically call your API
-            await callContract();
+            await handelUpdateBackend();
 
             console.log('✅ Burn successful!');
 
@@ -196,9 +235,6 @@ const BurnPage = () => {
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold">Burn NFTs</h1>
                 </div>
-                <p className="mb-4">
-                    Connected Wallet: <span className="font-mono text-wrap text-emerald-400">{address}</span>
-                </p>
             </div>
 
             <div className="flex flex-col mx-auto w-full max-w-3xl bg-[#1A2429] p-6 rounded-lg shadow-lg">

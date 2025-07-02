@@ -69,8 +69,10 @@ const AdminDashboard = () => {
                 responseType: 'blob',
             });
             downloadBlobAsFile(response.data, response.headers['content-disposition'], `${item.transaction_hash}.zip`);
-            setPendingItems(prev => prev.filter(i => i.transaction_hash !== item.transaction_hash));
-            setApprovedItems(prev => [...prev, item]);
+            if (pendingItems.some(p => p.transaction_hash === item.transaction_hash)){
+                setPendingItems(prev => prev.filter(i => i.transaction_hash !== item.transaction_hash));
+                setApprovedItems(prev => [...prev, item]);
+            } 
         } catch (error) {
             console.error("Error fetching update requests:", error);
         }  

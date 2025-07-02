@@ -227,6 +227,7 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
                     f"Burn IDs: {instance.burn_ids}\n"
                     f"Created At: {instance.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
                     f"Downloaded: {instance.downloaded}\n"
+                    f"Description: {instance.description}\n"
                 )
                 zip_file.writestr(f"{instance.transaction_hash}/metadata.txt", metadata)
 
