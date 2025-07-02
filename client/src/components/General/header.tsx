@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, Links } from "react-router-dom";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
+
+
+
 
 
 export default function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const { address, isConnected } = useAccount();
 
 	return (
 		<header className=' bg-[#0F1A1F] border-b-2 border-gray-600 text-white px-4 py-3 shadow-md'>
@@ -37,6 +42,11 @@ export default function Header() {
 
 				{/* Desktop Navigation links */}
 				<div className="hidden md:flex">
+					{isConnected && (
+						<Link to='/admin/dashboard' className='mr-4 bg-[#50D2C1] text-center p-4 text-gray-300 hover:text-white rounded-lg transition-colors duration-300'>
+							Admin Dashboard
+						</Link>
+					)}
 					<ConnectButton />
 				</div>
 
@@ -48,6 +58,11 @@ export default function Header() {
 			{mobileMenuOpen && (
 				<div className='md:hidden mt-4 flex flex-col items-start w-full max-w-xs bg-custom-dark-blue rounded-lg shadow-lg px-4 py-3 space-y-3'>
 					{/* Navigation links dropdown */}
+					{isConnected && (
+						<Link to='/admin/dashboard' className='mr-2 bg-[#50D2C1] text-center p-2 text-gray-300 hover:text-white rounded-lg transition-colors duration-300'>
+							Admin Dashboard
+						</Link>
+					)}
 					<ConnectButton />
 					{/* Icons and wallet button */}
 					<div className='flex items-center gap-4 pt-2 border-t border-gray-700 w-full'>

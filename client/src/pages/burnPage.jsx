@@ -10,7 +10,7 @@ import { ethers } from 'ethers';
 import { disconnect } from '@wagmi/core'
 import { config } from '../utils/wagmi'
 
-const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';
+
 const NFT_ABI = [
     "function symbol() public view returns (string)",
     "function setApprovalForAll(address operator, bool approved)",
@@ -230,7 +230,7 @@ const BurnPage = () => {
     };
 
     return (
-        <div className="p-6 flex flex-col bg-[#0F1A1F] min-h-screen text-white">
+        <div className=" px-74 py-6 flex flex-col bg-[#0F1A1F] min-h-screen text-white">
             <div>
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold">Burn NFTs</h1>
@@ -245,6 +245,7 @@ const BurnPage = () => {
                         maxSelections={10}
                         error={errors.nftSelections}
                     />
+
                     {errors.nftSelections && (
                         <p className="text-red-400 text-sm">{errors.nftSelections}</p>
                     )}

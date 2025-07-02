@@ -9,6 +9,7 @@ import {
 import axios from 'axios';
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
+import { useNavigate, } from 'react-router-dom';
 
 const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const BURN_MANGER_ABI = [
@@ -30,10 +31,12 @@ const AdminSettings = () => {
         createPrice: ''
     });
 
+
     // UI state
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
     const jwt = sessionStorage.getItem('jwt');
+    const navigate = useNavigate();
 
     const { _, isConnected } = useAccount();
     const { data: walletClient } = useWalletClient();
@@ -47,13 +50,20 @@ const AdminSettings = () => {
 
             const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             // burnManger.setBurnFee() convert to ethers
-            // formData.changePrice
+            // formData.burnAmount
             burnManger.setMinimumBurnAmount(formData.createPrice)
             // await burnManger.createPremium([...Array(10)].map((_, i) => i + 2), 2)
         } catch (error) {
             console.error("❌ Contract call failed:", error);
         }
     };
+
+    useEffect(() => {
+        if (!isConnected) {
+            sessionStorage.removeItem('jwt');
+            navigate('/', { replace: true });
+        }
+    }, [isConnected, navigate]);
 
     const handleInputChange = (field, value) => {
         // Only allow numbers and decimal points
@@ -99,7 +109,7 @@ const AdminSettings = () => {
                     }
                 },
                 {
-                    base_fee: changePrice,
+                    base_fee: burnAmount,
                     amount_to_burn: createPrice,
                 }
             );
@@ -133,7 +143,7 @@ const AdminSettings = () => {
         }
     };
 
-    const isFormValid = formData.changePrice || formData.createPrice;
+    const isFormValid = formData.burnAmount || formData.createPrice;
 
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
@@ -174,7 +184,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.changePrice.toFixed(2)}
+                                        ${currentValues.burnAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
@@ -206,7 +216,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.createPrice.toFixed(2)}
+                                        ${currentValues.createPrice.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
