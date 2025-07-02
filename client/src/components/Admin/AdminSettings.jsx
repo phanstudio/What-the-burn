@@ -47,7 +47,7 @@ const AdminSettings = () => {
 
             const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             // burnManger.setBurnFee() convert to ethers
-            // formData.changePrice
+            // formData.burnAmount
             burnManger.setMinimumBurnAmount(formData.createPrice)
             // await burnManger.createPremium([...Array(10)].map((_, i) => i + 2), 2)
         } catch (error) {
@@ -99,7 +99,7 @@ const AdminSettings = () => {
                     }
                 },
                 {
-                    base_fee: changePrice,
+                    base_fee: burnAmount,
                     amount_to_burn: createPrice,
                 }
             );
@@ -133,7 +133,7 @@ const AdminSettings = () => {
         }
     };
 
-    const isFormValid = formData.changePrice || formData.createPrice;
+    const isFormValid = formData.burnAmount || formData.createPrice;
 
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
@@ -174,7 +174,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.changePrice.toFixed(2)}
+                                        ${currentValues.burnAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
@@ -206,7 +206,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentPrices.createPrice.toFixed(2)}
+                                        ${currentValues.createPrice.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
