@@ -78,9 +78,9 @@ const AdminSettings = () => {
                         }
                     }
                 );
-                setCurrentPrices({
-                    burnAmount: parseFloat(response.data.base_fee),
-                    createPrice: response.data.amount_to_burn
+                setCurrentValues({
+                    burnAmount: response.data.amount_to_burn,
+                    createPrice: parseFloat(response.data.base_fee)
                 })
             } catch (err) {
                 console.error('❌ Failed to fetch settings data:', err);

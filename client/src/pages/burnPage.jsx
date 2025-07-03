@@ -10,7 +10,7 @@ import { ethers } from 'ethers';
 import { disconnect } from '@wagmi/core'
 import { config } from '../utils/wagmi'
 
-
+const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';
 const NFT_ABI = [
     "function symbol() public view returns (string)",
     "function setApprovalForAll(address operator, bool approved)",
@@ -56,7 +56,7 @@ const BurnPage = () => {
             const updateId2 = startingPoint+loopAmount
 
             const txHash = await callContract(burniIds2, updateId2)
-            const url = 'http://localhost:8000/update-requests/';
+            const url = 'https://what-the-burn-backend-phanstudios-projects.vercel.app/update-requests/';
             
             const newForm = new FormData();
             newForm.append('transaction_hash', txHash);
