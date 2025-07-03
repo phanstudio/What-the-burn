@@ -21,8 +21,8 @@ const BURN_MANGER_ABI = [
 const AdminSettings = () => {
     // Current prices (these would typically come from an API or state management)
     const [currentValues, setCurrentValues] = useState({
-        burnAmount: 25.99,
-        createPrice: 15.50
+        burnAmount: 25,
+        createPrice: 0.05,
     });
 
     // Form state
@@ -108,12 +108,9 @@ const AdminSettings = () => {
     const handleSave = async () => {
         setIsSaving(true);
         setSaveStatus(null);
-
-
-
         try {
             // Validate inputs
-            const burnAmount = parseFloat(formData.burnAmount);
+            const burnAmount = parseInt(formData.burnAmount);
             const createPrice = parseFloat(formData.createPrice);
 
             if (formData.burnAmount && (isNaN(burnAmount) || burnAmount <= 0)) {
@@ -124,17 +121,18 @@ const AdminSettings = () => {
                 throw new Error('Create price must be a valid positive number');
             }
 
+            console.log(createPrice, burnAmount)
             // await callContract() # set values in the contract
             await axios.put(
                 'https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/',
                 {
+                    base_fee: createPrice,
+                    amount_to_burn: burnAmount,
+                },
+                {
                     headers: {
                         Authorization: `Token ${jwt}`
                     }
-                },
-                {
-                    base_fee: burnAmount,
-                    amount_to_burn: createPrice,
                 }
             );
 
