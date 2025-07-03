@@ -65,6 +65,30 @@ const AdminSettings = () => {
         }
     }, [isConnected, navigate]);
 
+    useEffect(() => {
+        const fetchInfo = async () => {
+            if (!jwt) return;
+
+            try {
+                const response = await axios.get(
+                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`,
+                    {
+                        headers: {
+                            Authorization: `Token ${jwt}`
+                        }
+                    }
+                );
+                setCurrentPrices({
+                    burnAmount: parseFloat(response.data.base_fee),
+                    createPrice: response.data.amount_to_burn
+                })
+            } catch (err) {
+                console.error('❌ Failed to fetch settings data:', err);
+            }
+        };
+        fetchInfo();
+    }, [jwt]);
+
     const handleInputChange = (field, value) => {
         // Only allow numbers and decimal points
         const numericValue = value.replace(/[^0-9.]/g, '');

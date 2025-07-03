@@ -31,7 +31,7 @@ class EthUser(AbstractBaseUser, PermissionsMixin):
     username = None  # Remove username
     email = None  # Remove email
 
-    address = models.CharField(max_length=42, unique=True, primary_key= True)
+    address = models.CharField(max_length=42, unique=True, primary_key= True, db_index=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     nonce = models.CharField(max_length=100, default='', blank=True)
@@ -104,5 +104,6 @@ class ExpiringToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + datetime.timedelta(hours=6) # Session TTL
+            expiration_hours = getattr(settings, "CUSTOM_EXPIRATION_HOURS", 24)
+            self.expires_at = timezone.now() + datetime.timedelta(hours=expiration_hours)
         return super().save(*args, **kwargs)

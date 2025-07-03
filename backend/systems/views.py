@@ -25,6 +25,7 @@ import logging
 import zipfile
 from io import BytesIO
 import os
+import secrets
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -45,12 +46,11 @@ class GetSignMessageView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
-        user, _ = EthUser.objects.get_or_create(address=wallet)
-        
-        # Generate a new nonce
-        user.nonce = str(uuid.uuid4())
-        user.save()
-
+        user = EthUser.objects.filter(address=wallet).first()
+        if not user:
+            user = EthUser(address=wallet)
+        user.nonce = secrets.token_hex(16)
+        user.save(update_fields=["nonce"])
         return Response({
             "message": f"Sign this message to authenticate: {user.nonce}"
         })
@@ -85,8 +85,8 @@ class VerifySignatureView(APIView):
         )
 
         # Rotate nonce
-        user.nonce = str(uuid.uuid4())
-        user.save()
+        user.nonce = secrets.token_hex(16)
+        user.save(update_fields=["nonce"])
 
         return Response({
             "token": token.key,
