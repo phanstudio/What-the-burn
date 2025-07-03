@@ -298,7 +298,6 @@ class AppSettingsView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        print("PUT Validation Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request):
