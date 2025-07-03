@@ -206,7 +206,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentValues.burnAmount.toFixed(2)}
+                                        ${currentValues.burnAmount.toFixed(0)}
                                     </span>
                                 </div>
                             </div>
@@ -238,7 +238,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentValues.createPrice.toFixed(2)}
+                                        ${currentValues.createPrice.toFixed(7)}
                                     </span>
                                 </div>
                             </div>
