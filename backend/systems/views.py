@@ -47,10 +47,11 @@ class GetSignMessageView(APIView):
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
         user = EthUser.objects.filter(address=wallet).first()
-        if not user:
-            user = EthUser(address=wallet)
-        user.nonce = secrets.token_hex(16)
-        user.save(update_fields=["nonce"])
+        if user:
+            user.nonce = secrets.token_hex(16)
+            user.save(update_fields=["nonce"])
+        else:
+            user = EthUser.objects.create(address=wallet, nonce=secrets.token_hex(16))
         return Response({
             "message": f"Sign this message to authenticate: {user.nonce}"
         })
