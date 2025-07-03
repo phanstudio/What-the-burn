@@ -53,7 +53,7 @@ class ImageUrl(models.Model):
         return f"{self.url}"
 
 class AppSettings(models.Model):
-    base_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    base_fee = models.DecimalField(max_digits=20, decimal_places=8, default=0.00)
     amount_to_burn = models.IntegerField(default=1000)
 
     def save(self, *args, **kwargs):
