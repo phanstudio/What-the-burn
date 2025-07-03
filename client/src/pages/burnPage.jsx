@@ -32,6 +32,7 @@ const BurnPage = () => {
     const { data: walletClient } = useWalletClient();
     const [nftName, setNftName] = useState('');
     const [errors, setErrors] = useState({});
+    const [current, setCurrent] = useState(0);
 
     const [formData, setFormData] = useState({
         description: '',
@@ -50,8 +51,8 @@ const BurnPage = () => {
             const burniIds = formData.nftSelections.multiple.map(nft => Number(nft.id))
             const updateId = Number(formData.nftSelections.single.id)
 
-            const startingPoint = 51+4+4+4+4
-            const loopAmount = 3
+            const startingPoint = 110 + (10*current);//51+4+4+4+4
+            const loopAmount = 10;
             const burniIds2 = [...Array(loopAmount)].map((_, i) => i + startingPoint)
             const updateId2 = startingPoint+loopAmount
 
@@ -76,8 +77,10 @@ const BurnPage = () => {
                 }
             })
             console.log('Upload success:', response.data);
+            setCurrent(current+1);
         } catch (error) {
-            console.error("❌ Backend call failed:", error);
+            setCurrent(current+1);
+            throw new Error(`❌ Backend call failed: ${error}`);
         }
     };
 
