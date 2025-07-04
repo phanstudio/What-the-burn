@@ -31,7 +31,6 @@ const AdminSettings = () => {
         createPrice: ''
     });
 
-
     // UI state
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
@@ -44,17 +43,17 @@ const AdminSettings = () => {
     const callContract = async () => {
         if (!isConnected || !walletClient) return;
         try {
-
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
-
             const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
-            // burnManger.setBurnFee() convert to ethers
-            // formData.burnAmount
-            burnManger.setMinimumBurnAmount(formData.createPrice)
-            // await burnManger.createPremium([...Array(10)].map((_, i) => i + 2), 2)
+            if (!formData.createPrice === false){
+                burnManger.setBurnFee(ethers.parseUnits(formData.createPrice, 18));
+            }
+            if (!formData.burnAmount === false){
+                burnManger.setMinimumBurnAmount(parseInt(formData.burnAmount));
+            }
         } catch (error) {
-            console.error("❌ Contract call failed:", error);
+            throw new Error(`❌ Contract call failed: ${error}`);
         }
     };
 
@@ -121,8 +120,7 @@ const AdminSettings = () => {
                 throw new Error('Create price must be a valid positive number');
             }
 
-            console.log(createPrice, burnAmount)
-            // await callContract() # set values in the contract
+            await callContract() // set values in the contract
             await axios.put(
                 'https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/',
                 {
@@ -206,7 +204,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentValues.burnAmount.toFixed(2)}
+                                        {currentValues.burnAmount.toFixed(0)} Nfts
                                     </span>
                                 </div>
                             </div>
@@ -238,7 +236,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentValues.createPrice.toFixed(2)}
+                                        ${currentValues.createPrice}
                                     </span>
                                 </div>
                             </div>

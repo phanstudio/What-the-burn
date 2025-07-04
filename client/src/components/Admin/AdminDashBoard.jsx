@@ -23,7 +23,6 @@ const AdminDashboard = () => {
                     axios.get(uri+'/update-requests/?downloaded=false'),
                     axios.get(uri+'/update-requests/?downloaded=true')
                 ]);
-                console.log(pendingRes.data, approvedRes.data)
                 setPendingItems(pendingRes.data);
                 setApprovedItems(approvedRes.data);
             } catch (error) {
