@@ -10,12 +10,7 @@ import axios from 'axios';
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import { useNavigate, } from 'react-router-dom';
-
-const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
-const BURN_MANGER_ABI = [
-    "function setBurnFee(uint256 _newFee)",
-    "function setMinimumBurnAmount(uint16 amount)"
-];
+import {BURN_MANGER_ABI, BURN_MANGER_ADDRESS} from '../../utils/abi'
 
 const AdminSettings = () => {
     // Current prices (these would typically come from an API or state management)
