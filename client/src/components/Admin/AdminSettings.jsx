@@ -13,7 +13,6 @@ import { useNavigate, } from 'react-router-dom';
 
 const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
 const BURN_MANGER_ABI = [
-    "function createPremium(uint32[] tokenIds, uint32 update_id)",
     "function setBurnFee(uint256 _newFee)",
     "function setMinimumBurnAmount(uint16 amount)"
 ];
@@ -47,11 +46,12 @@ const AdminSettings = () => {
             const signer = await provider.getSigner();
             const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             if (!formData.createPrice === false){
-                burnManger.setBurnFee(ethers.parseUnits(formData.createPrice, 18));
+                await burnManger.setBurnFee(ethers.parseUnits(formData.createPrice, 18));
             }
             if (!formData.burnAmount === false){
-                burnManger.setMinimumBurnAmount(parseInt(formData.burnAmount));
+                await burnManger.setMinimumBurnAmount(parseInt(formData.burnAmount));
             }
+            // add the withdraw method and button
         } catch (error) {
             throw new Error(`❌ Contract call failed: ${error}`);
         }
@@ -113,7 +113,7 @@ const AdminSettings = () => {
             const createPrice = parseFloat(formData.createPrice);
 
             if (formData.burnAmount && (isNaN(burnAmount) || burnAmount <= 0)) {
-                throw new Error('Change price must be a valid positive number');
+                throw new Error('Change Burn amount must be a valid positive number');
             }
 
             if (formData.createPrice && (isNaN(createPrice) || createPrice <= 0)) {

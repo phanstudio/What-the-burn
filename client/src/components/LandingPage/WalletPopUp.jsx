@@ -17,7 +17,7 @@ const WalletSignaturePopup = ({ onClose, onapprove}) => {
         closePopup();
     }
 
-    const approveSignature = async() => {
+    const approveSignature = async() => { // disable closing once clicked
         setIsSigning(true);
         await approveSign();
         setSigned(true);

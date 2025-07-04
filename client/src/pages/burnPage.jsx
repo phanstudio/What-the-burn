@@ -7,8 +7,8 @@ import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
 import { ethers } from 'ethers';
-import { disconnect } from '@wagmi/core'
-import { config } from '../utils/wagmi'
+// import { disconnect } from '@wagmi/core'
+// import { config } from '../utils/wagmi'
 
 const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';
 const NFT_ABI = [
@@ -17,7 +17,7 @@ const NFT_ABI = [
     "function isApprovedForAll(address owner, address operator) view returns (bool)",
 ];
 
-const BURN_MANGER_ADDRESS = '0xe906c4e51F70639EE59DA0D54e37740760118Cf1';//'0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';
+const BURN_MANGER_ADDRESS = '0xe906c4e51F70639EE59DA0D54e37740760118Cf1';
 const BURN_MANGER_ABI = [
     "function createPremium(uint32[] tokenIds, uint32 update_id)",
     "function getBurnFee() public view returns (uint256)",
@@ -89,7 +89,6 @@ const BurnPage = () => {
         try {
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
-
             const burnManager = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
 
