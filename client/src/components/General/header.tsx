@@ -1,78 +1,59 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Link, Links } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-
-
-
-
 
 export default function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const { address, isConnected } = useAccount();
 
 	return (
-		<header className=' bg-[#0F1A1F] border-b-2 border-gray-600 text-white px-4 py-3 shadow-md'>
-			<div className='max-w-7xl mx-auto flex items-center justify-between'>
+		<header className="bg-[#0F1A1F] border-b-2 border-gray-600 text-white shadow-md">
+			<div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-4 min-h-[72px]">
 				{/* Logo and Toggle */}
-				<div className='flex items-center justify-between w-full md:w-auto'>
-					<Link to={'/'}>
-						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#02c74d] to-[#0de7ff] bg-clip-text text-transparent'>
+				<div className="flex items-center justify-between w-full md:w-auto">
+					<Link to="/">
+						<h2 className="text-2xl font-bold bg-gradient-to-r from-[#02c74d] to-[#0de7ff] bg-clip-text text-transparent">
 							What the Burn
 						</h2>
-						{/* <span className='text-2xl font-bold bg-gradient-to-r from-[#a4b9fa] to-[#4a0a80] bg-clip-text text-transparent'>
-							Notty Terminal
-							
-
-						</span> */}
 					</Link>
-					{/* Mobile toggle */}
+
 					<button
-						className='md:hidden text-gray-300'
+						className="md:hidden text-gray-300 ml-auto"
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 					>
-						{mobileMenuOpen ? (
-							<X className='w-6 h-6' />
-						) : (
-							<Menu className='w-6 h-6' />
-						)}
+						{mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
 					</button>
 				</div>
 
-				{/* Desktop Navigation links */}
-				<div className="hidden md:flex">
+				{/* Desktop Nav */}
+				<div className="hidden md:flex items-center gap-4">
 					{isConnected && (
-						<Link to='/admin/dashboard' className='mr-4 bg-[#50D2C1] text-center p-4 text-gray-300 hover:text-white rounded-lg transition-colors duration-300'>
+						<Link
+							to="/admin/dashboard"
+							className="bg-[#50D2C1] text-gray-800 px-4 py-2 rounded-lg hover:text-white transition"
+						>
 							Admin Dashboard
 						</Link>
 					)}
 					<ConnectButton />
 				</div>
-
-
-				{/* Right icons + button */}
 			</div>
 
-			{/* Mobile view dropdown nav */}
+			{/* Mobile Dropdown */}
 			{mobileMenuOpen && (
-				<div className='md:hidden mt-4 flex flex-col items-start w-full max-w-xs bg-custom-dark-blue rounded-lg shadow-lg px-4 py-3 space-y-3'>
-					{/* Navigation links dropdown */}
-					{isConnected && (
-						<Link to='/admin/dashboard' className='mr-2 bg-[#50D2C1] text-center p-2 text-gray-300 hover:text-white rounded-lg transition-colors duration-300'>
-							Admin Dashboard
-						</Link>
-					)}
-					<ConnectButton />
-					{/* Icons and wallet button */}
-					<div className='flex items-center gap-4 pt-2 border-t border-gray-700 w-full'>
-						{/* <div className='relative'>
-							<Bell className='w-5 h-5 text-gray-300 hover:text-white cursor-pointer' />
-							<span className='absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500' />
-						</div> */}
-
-						{/* <MessageSquare className='w-5 h-5 text-gray-300 hover:text-white cursor-pointer' /> */}
-
+				<div className="md:hidden px-4 pb-4">
+					<div className="flex flex-col space-y-3 rounded-lg bg-[#12242C] p-4 shadow-md">
+						{isConnected && (
+							<Link
+								to="/admin/dashboard"
+								className="bg-[#50D2C1] text-gray-800 px-4 py-2 rounded-lg hover:text-white transition"
+							>
+								Admin Dashboard
+							</Link>
+						)}
+						<ConnectButton />
 					</div>
 				</div>
 			)}
