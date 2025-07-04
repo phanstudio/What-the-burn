@@ -120,13 +120,15 @@ const AdminSettings = () => {
                 throw new Error('Create price must be a valid positive number');
             }
 
-            await callContract() // set values in the contract
+            const data = {};
+
+            if (!isNaN(burnAmount)) data.amount_to_burn = burnAmount;
+            if (!isNaN(createPrice)) data.base_fee = createPrice;
+
+            await callContract()
             await axios.put(
                 'https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/',
-                {
-                    base_fee: createPrice,
-                    amount_to_burn: burnAmount,
-                },
+                data,
                 {
                     headers: {
                         Authorization: `Token ${jwt}`
