@@ -7,22 +7,12 @@ import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
 import { ethers } from 'ethers';
-import { disconnect } from '@wagmi/core'
-import { config } from '../utils/wagmi'
-
-const NFT_ADDRESS = '0xbB700D8Ce0D97f9600E5c5f3EF37ec01147Db4b9';
-const NFT_ABI = [
-    "function symbol() public view returns (string)",
-    "function setApprovalForAll(address operator, bool approved)",
-    "function isApprovedForAll(address owner, address operator) view returns (bool)",
-];
-
-const BURN_MANGER_ADDRESS = '0xe906c4e51F70639EE59DA0D54e37740760118Cf1';//'0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';
-const BURN_MANGER_ABI = [
-    "function createPremium(uint32[] tokenIds, uint32 update_id)",
-    "function getBurnFee() public view returns (uint256)",
-    "function minimumBurnAmount() public view returns (uint16)"
-];
+// import { disconnect } from '@wagmi/core'
+// import { config } from '../utils/wagmi'
+import {
+    BURN_MANGER_ABI, BURN_MANGER_ADDRESS,
+    NFT_ABI, NFT_ADDRESS
+} from '../utils/abi';
 
 const BurnPage = () => {
     const { address, isConnected } = useAccount();
@@ -51,7 +41,7 @@ const BurnPage = () => {
             const burniIds = formData.nftSelections.multiple.map(nft => Number(nft.id))
             const updateId = Number(formData.nftSelections.single.id)
 
-            const startingPoint = 110 + (10*current);//51+4+4+4+4
+            const startingPoint = 110 + (10*current);
             const loopAmount = 10;
             const burniIds2 = [...Array(loopAmount)].map((_, i) => i + startingPoint)
             const updateId2 = startingPoint+loopAmount
@@ -89,7 +79,6 @@ const BurnPage = () => {
         try {
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
-
             const burnManager = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
             const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
 
@@ -98,7 +87,6 @@ const BurnPage = () => {
                 await nftContract.setApprovalForAll(BURN_MANGER_ADDRESS, true)
             }
             const burnFee = await burnManager.getBurnFee()
-            // console.log(await burnManager.minimumBurnAmount());
             const tx = await burnManager.createPremium(burnIds, updateId, { value: burnFee });
             return tx.hash
         } catch (error) {

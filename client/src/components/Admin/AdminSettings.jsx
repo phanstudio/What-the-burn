@@ -10,13 +10,7 @@ import axios from 'axios';
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import { useNavigate, } from 'react-router-dom';
-
-const BURN_MANGER_ADDRESS = '0x6BaAA6BbC7278579fCDeE38E3f3c4E4eE2272e13';//'0xF1ddcE4A958E4FBaa4a14cB65073a28663F2F350';
-const BURN_MANGER_ABI = [
-    "function createPremium(uint32[] tokenIds, uint32 update_id)",
-    "function setBurnFee(uint256 _newFee)",
-    "function setMinimumBurnAmount(uint16 amount)"
-];
+import {BURN_MANGER_ABI, BURN_MANGER_ADDRESS} from '../../utils/abi'
 
 const AdminSettings = () => {
     // Current prices (these would typically come from an API or state management)
@@ -31,7 +25,6 @@ const AdminSettings = () => {
         createPrice: ''
     });
 
-
     // UI state
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
@@ -44,17 +37,18 @@ const AdminSettings = () => {
     const callContract = async () => {
         if (!isConnected || !walletClient) return;
         try {
-
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
-
             const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
-            // burnManger.setBurnFee() convert to ethers
-            // formData.burnAmount
-            burnManger.setMinimumBurnAmount(formData.createPrice)
-            // await burnManger.createPremium([...Array(10)].map((_, i) => i + 2), 2)
+            if (!formData.createPrice === false){
+                await burnManger.setBurnFee(ethers.parseUnits(formData.createPrice, 18));
+            }
+            if (!formData.burnAmount === false){
+                await burnManger.setMinimumBurnAmount(parseInt(formData.burnAmount));
+            }
+            // add the withdraw method and button
         } catch (error) {
-            console.error("❌ Contract call failed:", error);
+            throw new Error(`❌ Contract call failed: ${error}`);
         }
     };
 
@@ -114,21 +108,22 @@ const AdminSettings = () => {
             const createPrice = parseFloat(formData.createPrice);
 
             if (formData.burnAmount && (isNaN(burnAmount) || burnAmount <= 0)) {
-                throw new Error('Change price must be a valid positive number');
+                throw new Error('Change Burn amount must be a valid positive number');
             }
 
             if (formData.createPrice && (isNaN(createPrice) || createPrice <= 0)) {
                 throw new Error('Create price must be a valid positive number');
             }
 
-            console.log(createPrice, burnAmount)
-            // await callContract() # set values in the contract
+            const data = {};
+
+            if (!isNaN(burnAmount)) data.amount_to_burn = burnAmount;
+            if (!isNaN(createPrice)) data.base_fee = createPrice;
+
+            await callContract()
             await axios.put(
                 'https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/',
-                {
-                    base_fee: createPrice,
-                    amount_to_burn: burnAmount,
-                },
+                data,
                 {
                     headers: {
                         Authorization: `Token ${jwt}`
@@ -206,7 +201,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        {currentValues.burnAmount.toFixed(0)} Nft
+                                        {currentValues.burnAmount.toFixed(0)} Nfts
                                     </span>
                                 </div>
                             </div>
@@ -238,7 +233,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentValues.createPrice.toFixed(7)}
+                                        ${currentValues.createPrice}
                                     </span>
                                 </div>
                             </div>
