@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import {
     Copy,
@@ -7,31 +7,26 @@ import {
     Check,
     ImageIcon,
     Hash,
-    Coins
+    Coins,
+    RefreshCw,
+    Loader2
 } from 'lucide-react';
+import { useAdminData } from './AdminLayout';
 
 const AdminDashboard = () => {
     const [copiedId, setCopiedId] = useState(null);
-    const [pendingItems, setPendingItems] = useState([]);
-    const [approvedItems, setApprovedItems] = useState([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
-                const [pendingRes, approvedRes] = await Promise.all([
-                    axios.get(uri+'/update-requests/?downloaded=false'),
-                    axios.get(uri+'/update-requests/?downloaded=true')
-                ]);
-                setPendingItems(pendingRes.data);
-                setApprovedItems(approvedRes.data);
-            } catch (error) {
-                console.error("Error fetching update requests:", error);
-            }
-        };
-
-        fetchData();
-    }, []);
+    // Get data from context
+    const {
+        pendingItems,
+        setPendingItems,
+        approvedItems,
+        setApprovedItems,
+        isLoading,
+        error,
+        refreshData
+    } = useAdminData();
 
     const handleCopy = async (text, id) => {
         try {
@@ -41,6 +36,12 @@ const AdminDashboard = () => {
         } catch (err) {
             console.error('Failed to copy text: ', err);
         }
+    };
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await refreshData();
+        setIsRefreshing(false);
     };
 
     function downloadBlobAsFile(blobData, contentDispositionHeader, defaultFileName = 'download.zip') {
@@ -68,13 +69,13 @@ const AdminDashboard = () => {
                 responseType: 'blob',
             });
             downloadBlobAsFile(response.data, response.headers['content-disposition'], `${item.transaction_hash}.zip`);
-            if (pendingItems.some(p => p.transaction_hash === item.transaction_hash)){
+            if (pendingItems.some(p => p.transaction_hash === item.transaction_hash)) {
                 setPendingItems(prev => prev.filter(i => i.transaction_hash !== item.transaction_hash));
                 setApprovedItems(prev => [...prev, item]);
-            } 
+            }
         } catch (error) {
             console.error("Error fetching update requests:", error);
-        }  
+        }
     };
 
     const handleDownloadAll = async (_items, listName) => {
@@ -98,7 +99,7 @@ const AdminDashboard = () => {
             console.error("Error downloading update requests:", error);
         }
     };
-    
+
     const ListItem = ({ item, listType }) => (
         <div className="bg-[#141f24] rounded-lg shadow-sm p-3 sm:p-4 hover:shadow-md hover:shadow-[#13776a] transition-shadow duration-200">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
@@ -177,13 +178,74 @@ const AdminDashboard = () => {
         </div>
     );
 
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-inherit p-3 sm:p-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Dashboard</h1>
+                        <p className="text-gray-600 text-sm sm:text-base">Manage tokens and transactions</p>
+                    </div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="flex items-center space-x-3">
+                            <Loader2 className="w-8 h-8 text-[#50D2C1] animate-spin" />
+                            <span className="text-[#50D2C1] text-lg">Loading dashboard data...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="min-h-screen bg-inherit p-3 sm:p-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Dashboard</h1>
+                        <p className="text-gray-600 text-sm sm:text-base">Manage tokens and transactions</p>
+                    </div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <p className="text-red-400 mb-4">Error loading dashboard data: {error}</p>
+                            <button
+                                onClick={handleRefresh}
+                                className="flex items-center space-x-2 px-4 py-2 bg-[#115E4C] text-white rounded-lg hover:bg-[#50D2C1] transition-colors duration-200 mx-auto"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                <span>Retry</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Dashboard</h1>
-                    <p className="text-gray-600 text-sm sm:text-base">Manage tokens and transactions</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Dashboard</h1>
+                            <p className="text-gray-600 text-sm sm:text-base">Manage tokens and transactions</p>
+                        </div>
+                        <button
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                            className="flex items-center space-x-2 px-4 py-2 bg-[#115E4C] text-white rounded-lg hover:bg-[#50D2C1] transition-colors duration-200 mt-4 sm:mt-0"
+                            title="Refresh Data"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            <span className="text-sm font-medium">
+                                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                            </span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* First List - Pending Items */}
@@ -199,18 +261,26 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-3 sm:space-y-4 mb-4">
-                        {pendingItems.map((item) => (
-                            <ListItem key={item.update_id} item={item} listType="pending" />
-                        ))}
+                        {pendingItems.length === 0 ? (
+                            <div className="text-center py-8 text-gray-400">
+                                <p>No pending items to display</p>
+                            </div>
+                        ) : (
+                            pendingItems.map((item) => (
+                                <ListItem key={item.update_id} item={item} listType="pending" />
+                            ))
+                        )}
                     </div>
 
-                    <button
-                        onClick={() => handleDownloadAll(pendingItems, 'pending')}
-                        className="flex items-center justify-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 w-full sm:w-auto"
-                    >
-                        <DownloadCloud className="w-4 h-4" />
-                        <span className="font-medium text-sm sm:text-base">Download All Pending</span>
-                    </button>
+                    {pendingItems.length > 0 && (
+                        <button
+                            onClick={() => handleDownloadAll(pendingItems, 'pending')}
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 w-full sm:w-auto"
+                        >
+                            <DownloadCloud className="w-4 h-4" />
+                            <span className="font-medium text-sm sm:text-base">Download All Pending</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* Second List - Approved Items */}
@@ -226,18 +296,26 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-3 sm:space-y-4 mb-4">
-                        {approvedItems.map((item) => (
-                            <ListItem key={item.update_id} item={item} listType="approved" />
-                        ))}
+                        {approvedItems.length === 0 ? (
+                            <div className="text-center py-8 text-gray-400">
+                                <p>No approved items to display</p>
+                            </div>
+                        ) : (
+                            approvedItems.map((item) => (
+                                <ListItem key={item.update_id} item={item} listType="approved" />
+                            ))
+                        )}
                     </div>
 
-                    <button
-                        onClick={() => handleDownloadAll(approvedItems, 'approved')}
-                        className="flex items-center justify-center space-x-2 px-4 py-2 bg-[#115E4C] text-white rounded-lg hover:bg-[#50D2C1] transition-colors duration-200 w-full sm:w-auto"
-                    >
-                        <DownloadCloud className="w-4 h-4" />
-                        <span className="font-medium text-sm sm:text-base">Download All Approved</span>
-                    </button>
+                    {approvedItems.length > 0 && (
+                        <button
+                            onClick={() => handleDownloadAll(approvedItems, 'approved')}
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-[#115E4C] text-white rounded-lg hover:bg-[#50D2C1] transition-colors duration-200 w-full sm:w-auto"
+                        >
+                            <DownloadCloud className="w-4 h-4" />
+                            <span className="font-medium text-sm sm:text-base">Download All Approved</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

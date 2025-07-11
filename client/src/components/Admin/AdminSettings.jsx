@@ -10,7 +10,7 @@ import axios from 'axios';
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
 import { useNavigate, } from 'react-router-dom';
-import {BURN_MANGER_ABI, BURN_MANGER_ADDRESS} from '../../utils/abi'
+import { BURN_MANGER_ABI, BURN_MANGER_ADDRESS } from '../../utils/abi'
 
 const AdminSettings = () => {
     // Current prices (these would typically come from an API or state management)
@@ -40,10 +40,10 @@ const AdminSettings = () => {
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
             const burnManger = new ethers.Contract(BURN_MANGER_ADDRESS, BURN_MANGER_ABI, signer);
-            if (!formData.createPrice === false){
+            if (!formData.createPrice === false) {
                 await burnManger.setBurnFee(ethers.parseUnits(formData.createPrice, 18));
             }
-            if (!formData.burnAmount === false){
+            if (!formData.burnAmount === false) {
                 await burnManger.setMinimumBurnAmount(parseInt(formData.burnAmount));
             }
             // add the withdraw method and button
@@ -206,7 +206,7 @@ const AdminSettings = () => {
                                 </div>
                             </div>
                             <p className="text-xs text-gray-500">
-                                Set the price for existing NFTs
+                                Set the number of NFTs to burn
                             </p>
                         </div>
 
