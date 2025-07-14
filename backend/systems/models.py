@@ -46,7 +46,7 @@ class EthUser(AbstractBaseUser, PermissionsMixin):
 
 class ImageUrl(models.Model):
     """Represents a coin on the platform"""
-    id = models.IntegerField(default=1, unique=True, primary_key=True)
+    id = models.IntegerField(default=1, unique=True, primary_key=True, db_index= True)
     url = models.CharField(max_length=255)
 
     def __str__(self):
@@ -66,6 +66,17 @@ class AppSettings(models.Model):
 
     def __str__(self):
         return "App Settings"
+
+class Lovecraft(models.Model):
+    token_id = models.BigIntegerField()
+    current_owner = models.CharField(max_length=42)
+    block_number = models.BigIntegerField()
+    timestamp = models.DecimalField(max_digits=30, decimal_places=0)
+    transaction_hash = models.CharField(max_length=66)
+
+    class Meta:
+        managed = False  # Prevent Django from altering the table
+        db_table = 'lovecraft'
 
 class Update_Request(models.Model):
     transaction_hash = models.CharField(max_length=88, primary_key=True, unique=True, null= False)

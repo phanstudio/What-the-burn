@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.http import HttpResponse
-from .models import EthUser, ImageUrl, Update_Request, AppSettings
+from .models import EthUser, ImageUrl, Update_Request, AppSettings, Lovecraft
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from rest_framework.views import APIView
@@ -87,100 +87,27 @@ class VerifySignatureView(APIView):
         user.save(update_fields=["nonce"])
 
         return Response({
+            "admin": user.is_staff,
             "token": token.key,
             "expires_at": token.expires_at
         })
 
-class Gettokens(APIView): # remove an error this # we can use the authtoken instead of 
+class Gettokens(APIView): 
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        wallet = request.query_params.get("wallet", "")
-        
-        print(request.user)
-        # user = EthUser.objects.get(address=wallet)
+        wallet = request.user.address.lower()
         img_url = ImageUrl.objects.get(id=1)
-        tokens = self.tokens_owned(wallet, img_url.url)#user.address)
+        tokens = self.tokens_owned(wallet, img_url.url)
         return Response({"tokens": tokens})
 
-    def get_tokens(request, address):
-        token_ids = Lovecraft.objects.filter(current_owner__iexact=address).values_list('token_id', flat=True)
-        return JsonResponse({"tokens": list(token_ids)})
-
     def tokens_owned(self, owner_address, image_url) -> list:
-        url = os.getenv('THEGRAPH_URL')
-        query = f"""
-        query owner {{
-            transfers(
-                where:{{
-                    or: [
-                        {{
-                            to: "{owner_address.lower()}",
-                            from_not: "{owner_address.lower()}"
-                        }},
-                        {{
-                            from: "{owner_address.lower()}",
-                            to_not: "{owner_address.lower()}"
-                        }}
-                    ]
-                }}
-                orderBy: timestamp_
-                orderDirection: desc
-            ) {{
-                tokenId
-                to
-                timestamp_
-            }}
-        }}
-        """
-        response = requests.post(url, json={'query': query})
-        # Check response
-        if response.status_code == 200:
-            response_json = response.json()
-            tokens = self.get_held_tokens_ultra_fast(response_json, owner_address.lower())
-            token_ids = [{
-                "id": token,
-                "image": f"{image_url}",#{token}.png",
-                "name": f"What test, Why test {token}" # can make dynamic or store # What?!
-                } for token in tokens]
-            return token_ids
-        else:
-            print("Error:", response.status_code, response.text)
-            return []
-    
-    def get_held_tokens(self, transfers_data, owner_address):
-        """
-        Ultra-fast function to get currently held token IDs.
-        """
-        owner_lower = owner_address.lower()
-        token_status = {}
-        
-        # Process in reverse (already sorted desc by timestamp)
-        for t in reversed(transfers_data['data']['transfers']):
-            token_id = t['tokenId']
-            if token_id not in token_status:
-                token_status[token_id] = t['to'].lower() == owner_lower
-        
-        return [tid for tid, owned in token_status.items() if owned]
-
-    # Even faster with set operations (if you have many transfers):
-    def get_held_tokens_ultra_fast(self, transfers_data, owner_address):
-        """
-        Ultra-fast using set operations - best for large datasets.
-        """
-        owner_lower = owner_address.lower()
-        transfers = transfers_data['data']['transfers']
-        seen_tokens = set()
-        owned_tokens = set()
-        
-        # Process newest first (already desc sorted)
-        for t in transfers:
-            token_id = t['tokenId']
-            if token_id not in seen_tokens:
-                seen_tokens.add(token_id)
-                if t['to'].lower() == owner_lower:
-                    owned_tokens.add(token_id)
-        
-        return list(owned_tokens)
+        tokens = Lovecraft.objects.filter(current_owner=owner_address).values_list('token_id', flat=True)
+        token_ids = [{
+            "id": token,
+            "image": f"{image_url}",#{token}.png",
+            "name": f"What test, Why test {token}" # can make dynamic or store # What?!
+            } for token in tokens]
+        return token_ids
 
 class UpdateImageUrl(APIView):
     permission_classes = [IsAuthenticated]
@@ -248,7 +175,7 @@ class CleanupExpiredTokensView(APIView):
 
 class UpdateRequestViewSet(viewsets.ModelViewSet):
     queryset = Update_Request.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     serializer_class = UpdateRequestSerializer
 
     def get_queryset(self):
@@ -335,7 +262,7 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
         return response
 
 class AppSettingsView(APIView): # auth
-    permission_classes = [AllowAny]#IsAdminUser] # Or your custom permission
+    permission_classes = [IsAdminUser] # Or your custom permission
 
     def get(self, request):
         settings = AppSettings.load()
