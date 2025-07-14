@@ -13,6 +13,8 @@ import {
     NFT_ABI, NFT_ADDRESS
 } from '../utils/abi';
 
+const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
+
 const BurnPage = () => {
     const { address, isConnected } = useAccount();
     const [nfts, setNfts] = useState([]);
@@ -65,7 +67,7 @@ const BurnPage = () => {
             const updateId = Number(formData.nftSelections.single.id);
 
             const txHash = await callContract(burnIds, updateId);
-            const url = `${process.env.REACT_APP_API_URL}/update-requests/`;
+            const url = `${uri}/update-requests/`;
 
             const newForm = new FormData();
             newForm.append('transaction_hash', txHash);
@@ -136,7 +138,7 @@ const BurnPage = () => {
             setLoading(true);
             try {
                 const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/user-tokens/?wallet=${address}`,
+                    `${uri}/user-tokens/?wallet=${address}`,
                     {
                         headers: {
                             Authorization: `Token ${jwt}`
