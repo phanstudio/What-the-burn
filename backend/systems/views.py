@@ -1,7 +1,6 @@
 from datetime import datetime
 from django.http import HttpResponse
 from .models import EthUser, ImageUrl, Update_Request, AppSettings
-import uuid
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from rest_framework.views import APIView
@@ -15,7 +14,7 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from web3 import Web3
 import requests
-from rest_framework import generics, viewsets, status
+from rest_framework import viewsets, status
 from .models import EthUser, ExpiringToken
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -42,7 +41,7 @@ def index(request):
     '''
     return HttpResponse(html)
 
-class GetSignMessageView(APIView):
+class GetSignMessageView(APIView): # cors should help with this
     permission_classes = [AllowAny]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
@@ -92,49 +91,99 @@ class VerifySignatureView(APIView):
             "expires_at": token.expires_at
         })
 
-class Gettokens(APIView): # remove an error this
+class Gettokens(APIView): # remove an error this # we can use the authtoken instead of 
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
-
+        
+        print(request.user)
         # user = EthUser.objects.get(address=wallet)
         img_url = ImageUrl.objects.get(id=1)
-        
         tokens = self.tokens_owned(wallet, img_url.url)#user.address)
+        return Response({"tokens": tokens})
 
-        return Response({
-            "tokens": tokens
-        })
+    def get_tokens(request, address):
+        token_ids = Lovecraft.objects.filter(current_owner__iexact=address).values_list('token_id', flat=True)
+        return JsonResponse({"tokens": list(token_ids)})
 
     def tokens_owned(self, owner_address, image_url) -> list:
         url = os.getenv('THEGRAPH_URL')
-
         query = f"""
         query owner {{
-        transfers(
-            where: {{
-            to: "{owner_address.lower()}",
-            from_not: "{owner_address.lower()}"
+            transfers(
+                where:{{
+                    or: [
+                        {{
+                            to: "{owner_address.lower()}",
+                            from_not: "{owner_address.lower()}"
+                        }},
+                        {{
+                            from: "{owner_address.lower()}",
+                            to_not: "{owner_address.lower()}"
+                        }}
+                    ]
+                }}
+                orderBy: timestamp_
+                orderDirection: desc
+            ) {{
+                tokenId
+                to
+                timestamp_
             }}
-        ) {{
-            tokenId
-        }}
         }}
         """
         response = requests.post(url, json={'query': query})
         # Check response
         if response.status_code == 200:
             response_json = response.json()
+            tokens = self.get_held_tokens_ultra_fast(response_json, owner_address.lower())
             token_ids = [{
-                "id":entry["tokenId"],
-                "image":f"{image_url}{entry["tokenId"]}.png",
-                "name": f"What?! {entry["tokenId"]}" # can make dynamic or store
-                } for entry in response_json["data"]["transfers"]]
+                "id": token,
+                "image": f"{image_url}",#{token}.png",
+                "name": f"What test, Why test {token}" # can make dynamic or store # What?!
+                } for token in tokens]
             return token_ids
         else:
             print("Error:", response.status_code, response.text)
             return []
+    
+    def get_held_tokens(self, transfers_data, owner_address):
+        """
+        Ultra-fast function to get currently held token IDs.
+        """
+        owner_lower = owner_address.lower()
+        token_status = {}
+        
+        # Process in reverse (already sorted desc by timestamp)
+        for t in reversed(transfers_data['data']['transfers']):
+            token_id = t['tokenId']
+            if token_id not in token_status:
+                token_status[token_id] = t['to'].lower() == owner_lower
+        
+        return [tid for tid, owned in token_status.items() if owned]
+
+    # Even faster with set operations (if you have many transfers):
+    def get_held_tokens_ultra_fast(self, transfers_data, owner_address):
+        """
+        Ultra-fast using set operations - best for large datasets.
+        """
+        owner_lower = owner_address.lower()
+        transfers = transfers_data['data']['transfers']
+        seen_tokens = set()
+        owned_tokens = set()
+        
+        # Process newest first (already desc sorted)
+        for t in transfers:
+            token_id = t['tokenId']
+            if token_id not in seen_tokens:
+                seen_tokens.add(token_id)
+                if t['to'].lower() == owner_lower:
+                    owned_tokens.add(token_id)
+        
+        return list(owned_tokens)
 
 class UpdateImageUrl(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         url = request.query_params.get("url", "")
         _, _ = ImageUrl.objects.update_or_create(id=1, url=url)
@@ -144,6 +193,7 @@ class UpdateImageUrl(APIView):
         })
 
 class UpdateImageUrlFromIPFS(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         url = request.query_params.get("url", "")
         if url == "":
@@ -198,7 +248,7 @@ class CleanupExpiredTokensView(APIView):
 
 class UpdateRequestViewSet(viewsets.ModelViewSet):
     queryset = Update_Request.objects.all()
-    permission_classes = [AllowAny]#IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = UpdateRequestSerializer
 
     def get_queryset(self):
@@ -284,8 +334,8 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
-class AppSettingsView(APIView):
-    permission_classes = [AllowAny]#IsAdminUser]  # Or your custom permission
+class AppSettingsView(APIView): # auth
+    permission_classes = [AllowAny]#IsAdminUser] # Or your custom permission
 
     def get(self, request):
         settings = AppSettings.load()
