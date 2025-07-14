@@ -61,7 +61,7 @@ const hyperEVMTestnet = defineChain({
 export const config = getDefaultConfig({
   appName: 'What the burn?',
   projectId: '5379c9e3bf58798f600c7cd162a5120f',
-  chains: [hyperEVM, hyperEVMTestnet, mainnet, seiDevnet],
+  chains: [hyperEVM, hyperEVMTestnet],//, mainnet, seiDevnet],
   ssr: false, // If your dApp uses server side rendering (SSR)
   wallets: [
     {
