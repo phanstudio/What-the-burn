@@ -175,8 +175,14 @@ class CleanupExpiredTokensView(APIView):
 
 class UpdateRequestViewSet(viewsets.ModelViewSet):
     queryset = Update_Request.objects.all()
-    permission_classes = [IsAdminUser]
     serializer_class = UpdateRequestSerializer
+
+    def get_permissions(self):
+        # Only allow authenticated users to POST (create)
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        # All download-related actions and any other method must be admin
+        return [IsAdminUser()]
 
     def get_queryset(self):
         """Allows filtering by `downloaded` status"""
