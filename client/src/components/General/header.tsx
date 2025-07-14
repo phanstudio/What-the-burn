@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { Flame } from "lucide-react";
+import { useAdmin } from '../custom/AdminContext';
 
 export default function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const { address, isConnected } = useAccount();
+	const { isAdmin } = useAdmin();
 
 	return (
 		<header className="bg-[#0F1A1F] border-b-2 border-gray-600 text-white shadow-md">
@@ -33,7 +35,7 @@ export default function Header() {
 
 				{/* Desktop Nav */}
 				<div className="hidden md:flex items-center gap-4">
-					{isConnected && (
+					{(isConnected && isAdmin) && (
 						<Link
 							to="/admin/dashboard"
 							className="bg-[#50D2C1] text-gray-800 px-4 py-2 rounded-lg hover:text-white transition"
@@ -49,7 +51,7 @@ export default function Header() {
 			{mobileMenuOpen && (
 				<div className="md:hidden px-4 pb-4">
 					<div className="flex flex-col space-y-3 rounded-lg bg-[#12242C] p-4 shadow-md">
-						{isConnected && (
+						{(isConnected && isAdmin) && (
 							<Link
 								to="/admin/dashboard"
 								className="bg-[#50D2C1] text-gray-800 px-4 py-2 rounded-lg hover:text-white transition"

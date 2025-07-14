@@ -52,7 +52,7 @@ const AdminSettings = () => {
                 await burnManger.setBurnFee(ethers.parseUnits(formData.createPrice, 18));
             }
             if (!formData.burnAmount === false) {
-                await burnManger.setMinimumBurnAmount(parseInt(formData.burnAmount));
+                await burnManger.setBurnAmount(parseInt(formData.burnAmount));
             }
             // add the withdraw method and button
         } catch (error) {
