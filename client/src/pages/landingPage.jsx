@@ -9,6 +9,7 @@ import { config } from '../utils/wagmi';
 import VideoBackground from '../components/LandingPage/VideoBackground';
 import { Flame, Zap, Shield, TrendingUp, ArrowRight, Sparkles, Bitcoin, Wallet, IdCardLanyard } from 'lucide-react';
 import nftIcon from '../components/LandingPage/nftIcon';
+import { useAdmin } from '../components/custom/AdminContext';
 
 function LandingPage() {
     const { address, isConnected } = useAccount();
@@ -19,6 +20,7 @@ function LandingPage() {
     const [isVisible, setIsVisible] = useState(false);
     const [burnCount, setBurnCount] = useState(0);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const { setIsAdmin } = useAdmin();
 
     const handlePopupClose = useCallback((shouldDisconnect = true) => {
         if (shouldDisconnect) {
@@ -52,6 +54,7 @@ function LandingPage() {
             );
 
             const token = verifyResponse.data.token;
+            setIsAdmin(verifyResponse.data.admin);
             sessionStorage.setItem('jwt', token);
             setJwt(token);
         } catch (err) {

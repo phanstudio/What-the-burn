@@ -65,7 +65,6 @@ const BurnPage = () => {
         try {
             const burnIds = formData.nftSelections.multiple.map(nft => Number(nft.id));
             const updateId = Number(formData.nftSelections.single.id);
-
             const txHash = await callContract(burnIds, updateId);
             const url = `${uri}/update-requests/`;
 
@@ -80,7 +79,7 @@ const BurnPage = () => {
 
             const response = await axios.post(url, newForm, {
                 headers: {
-                    'Authorization': `Bearer ${jwt}`,
+                    'Authorization': `Token ${jwt}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -114,6 +113,7 @@ const BurnPage = () => {
 
             const burnFee = await burnManager.getBurnFee();
             showMessage('Executing burn transaction...', 'info');
+            console.log(burnIds, burnFee, updateId)
             const tx = await burnManager.createPremium(burnIds, updateId, { value: burnFee });
             await tx.wait();
 
@@ -131,29 +131,29 @@ const BurnPage = () => {
         }
     }, [isConnected, navigate]);
 
-    useEffect(() => {
-        const fetchNFTs = async () => {
-            if (!jwt || !address) return;
+    const fetchNFTs = async () => {
+        if (!jwt || !address) return;
 
-            setLoading(true);
-            try {
-                const response = await axios.get(
-                    `${uri}/user-tokens/?wallet=${address}`,
-                    {
-                        headers: {
-                            Authorization: `Token ${jwt}`
-                        }
+        setLoading(true);
+        try {
+            const response = await axios.get(
+                `${uri}/user-tokens/`,
+                {
+                    headers: {
+                        Authorization: `Token ${jwt}`
                     }
-                );
-                setNfts(response.data.tokens);
-            } catch (err) {
-                console.error('Failed to fetch NFTs:', err);
-                showMessage('Failed to fetch NFTs. Please try again.', 'error');
-            } finally {
-                setLoading(false);
-            }
-        };
+                }
+            );
+            setNfts(response.data.tokens);
+        } catch (err) {
+            console.error('Failed to fetch NFTs:', err);
+            showMessage('Failed to fetch NFTs. Please try again.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchNFTs();
     }, [jwt, address]);
 

@@ -15,6 +15,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { config } from './utils/wagmi.js';
+import { AdminProvider } from './components/custom/AdminContext';
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,9 @@ createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
           <BrowserRouter>
-            <App />
+            <AdminProvider>
+              <App />
+            </AdminProvider>
           </BrowserRouter>
         </RainbowKitProvider>
       </QueryClientProvider>

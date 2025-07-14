@@ -2,6 +2,7 @@ import { Settings, LayoutDashboard } from 'lucide-react'
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import axios from 'axios'
+import { useAdmin } from '../custom/AdminContext';
 
 // Create context for admin data
 const AdminDataContext = createContext();
@@ -33,15 +34,29 @@ function AdminLayout() {
     // Helper function to determine if a link is active
     const isActive = (path) => location.pathname === path
 
+    const { isAdmin } = useAdmin();
+    if (!isAdmin) return <Navigate to="/" replace />;
+
     // Fetch dashboard data
     const fetchDashboardData = async () => {
+        const jwt = sessionStorage.getItem('jwt'); // still need something to check the jwt disconnect and send back
+        if (!jwt) return; // send back if no jwt, if unauthorized send the back
+
         try {
             setIsLoading(true);
             setError(null);
             const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
             const [pendingRes, approvedRes] = await Promise.all([
-                axios.get(uri + '/update-requests/?downloaded=false'),
-                axios.get(uri + '/update-requests/?downloaded=true')
+                axios.get(uri + '/update-requests/?downloaded=false', {
+                    headers: {
+                        Authorization: `Token ${jwt}`
+                    }
+                }),
+                axios.get(uri + '/update-requests/?downloaded=true', {
+                    headers: {
+                        Authorization: `Token ${jwt}`
+                    }
+                })
             ]);
             setPendingItems(pendingRes.data);
             setApprovedItems(approvedRes.data);
