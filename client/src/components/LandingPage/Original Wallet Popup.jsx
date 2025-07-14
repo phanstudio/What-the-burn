@@ -40,7 +40,7 @@ const WalletSignaturePopup = ({ onClose, onapprove }) => {
             onClick={closePopup}
         >
             <div
-                className="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-3xl p-0.5 max-w-md w-full animate-[slideUp_0.3s_ease-out]"
+                className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-0.5 max-w-md w-full animate-[slideUp_0.3s_ease-out]"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="bg-white rounded-[22px] p-8 text-center relative">
@@ -51,20 +51,20 @@ const WalletSignaturePopup = ({ onClose, onapprove }) => {
                         &times;
                     </button>
 
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg animate-pulse">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg animate-pulse">
                         <svg viewBox="0 0 24 24" fill="white" className="w-10 h-10">
                             <path d="M21 18v1c0 1.1-.9 2-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14c1.1 0 2 .9 2 2v1h-9a2 2 0 00-2 2v8a2 2 0 002 2h9zM12 16h10V8H12v8zm2-2a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
                         </svg>
                     </div>
 
-                    <h2 className="text-2xl font-bold bg-gradient-to-br from-cyan-500 to-teal-600 bg-clip-text text-transparent mb-3">
-                        Confirm Signature
+                    <h2 className="text-2xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 bg-clip-text text-transparent mb-3">
+                        Sign Transaction
                     </h2>
-                    {/* <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                    <p className="text-gray-500 text-sm mb-6 leading-relaxed">
                         Your wallet is requesting permission to sign this transaction. Please review the details carefully before proceeding.
-                    </p> */}
+                    </p>
 
-                    {/* <div className="bg-gray-50 border border-gray-200 rounded-xl text-left p-5 my-6">
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl text-left p-5 my-6">
                         {[
                             { label: 'Network', value: 'Ethereum Mainnet' },
                             { label: 'From', value: '0x742d...35Ac' },
@@ -79,9 +79,9 @@ const WalletSignaturePopup = ({ onClose, onapprove }) => {
                                 <span className="text-sm text-gray-500 font-mono">{value}</span>
                             </div>
                         ))}
-                    </div> */}
+                    </div>
 
-                    {/* <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 flex gap-3 text-left mb-5">
+                    <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 flex gap-3 text-left mb-5">
                         <div className="text-yellow-600 mt-1 shrink-0">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -90,7 +90,7 @@ const WalletSignaturePopup = ({ onClose, onapprove }) => {
                         <div className="text-sm text-yellow-800 leading-snug">
                             <strong>Security reminder:</strong> Only sign transactions you understand and trust. Make sure you're on the correct website and verify all transaction details.
                         </div>
-                    </div> */}
+                    </div>
 
                     <div className="flex gap-4 mt-8">
                         <button
@@ -101,7 +101,7 @@ const WalletSignaturePopup = ({ onClose, onapprove }) => {
                             Cancel
                         </button>
                         <button
-                            className={`flex-1 py-4 text-white bg-gradient-to-br from-cyan-500 to-teal-600 rounded-lg font-semibold text-base flex items-center justify-center gap-2 transition hover:shadow-lg ${isSigning ? 'opacity-70 pointer-events-none' : ''
+                            className={`flex-1 py-4 text-white bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg font-semibold text-base flex items-center justify-center gap-2 transition hover:shadow-lg ${isSigning ? 'opacity-70 pointer-events-none' : ''
                                 }`}
                             onClick={approveSignature}
                         >

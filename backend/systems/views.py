@@ -1,7 +1,6 @@
 from datetime import datetime
 from django.http import HttpResponse
-from .models import EthUser, ImageUrl, Update_Request, AppSettings
-import uuid
+from .models import EthUser, ImageUrl, Update_Request, AppSettings, Lovecraft
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from rest_framework.views import APIView
@@ -15,7 +14,7 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from web3 import Web3
 import requests
-from rest_framework import generics, viewsets, status
+from rest_framework import viewsets, status
 from .models import EthUser, ExpiringToken
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -42,7 +41,7 @@ def index(request):
     '''
     return HttpResponse(html)
 
-class GetSignMessageView(APIView):
+class GetSignMessageView(APIView): # cors should help with this
     permission_classes = [AllowAny]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
@@ -88,53 +87,30 @@ class VerifySignatureView(APIView):
         user.save(update_fields=["nonce"])
 
         return Response({
+            "admin": user.is_staff,
             "token": token.key,
             "expires_at": token.expires_at
         })
 
-class Gettokens(APIView): # remove an error this
+class Gettokens(APIView): 
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        wallet = request.query_params.get("wallet", "")
-
-        # user = EthUser.objects.get(address=wallet)
+        wallet = request.user.address.lower()
         img_url = ImageUrl.objects.get(id=1)
-        
-        tokens = self.tokens_owned(wallet, img_url.url)#user.address)
-
-        return Response({
-            "tokens": tokens
-        })
+        tokens = self.tokens_owned(wallet, img_url.url)
+        return Response({"tokens": tokens})
 
     def tokens_owned(self, owner_address, image_url) -> list:
-        url = os.getenv('THEGRAPH_URL')
-
-        query = f"""
-        query owner {{
-        transfers(
-            where: {{
-            to: "{owner_address.lower()}",
-            from_not: "{owner_address.lower()}"
-            }}
-        ) {{
-            tokenId
-        }}
-        }}
-        """
-        response = requests.post(url, json={'query': query})
-        # Check response
-        if response.status_code == 200:
-            response_json = response.json()
-            token_ids = [{
-                "id":entry["tokenId"],
-                "image":f"{image_url}{entry["tokenId"]}.png",
-                "name": f"What?! {entry["tokenId"]}" # can make dynamic or store
-                } for entry in response_json["data"]["transfers"]]
-            return token_ids
-        else:
-            print("Error:", response.status_code, response.text)
-            return []
+        tokens = Lovecraft.objects.filter(current_owner=owner_address).values_list('token_id', flat=True)
+        token_ids = [{
+            "id": token,
+            "image": f"{image_url}",#{token}.png",
+            "name": f"What test, Why test {token}" # can make dynamic or store # What?!
+            } for token in tokens]
+        return token_ids
 
 class UpdateImageUrl(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         url = request.query_params.get("url", "")
         _, _ = ImageUrl.objects.update_or_create(id=1, url=url)
@@ -144,6 +120,7 @@ class UpdateImageUrl(APIView):
         })
 
 class UpdateImageUrlFromIPFS(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         url = request.query_params.get("url", "")
         if url == "":
@@ -198,7 +175,7 @@ class CleanupExpiredTokensView(APIView):
 
 class UpdateRequestViewSet(viewsets.ModelViewSet):
     queryset = Update_Request.objects.all()
-    permission_classes = [AllowAny]#IsAuthenticated]
+    permission_classes = [IsAdminUser]
     serializer_class = UpdateRequestSerializer
 
     def get_queryset(self):
@@ -284,8 +261,8 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
-class AppSettingsView(APIView):
-    permission_classes = [AllowAny]#IsAdminUser]  # Or your custom permission
+class AppSettingsView(APIView): # auth
+    permission_classes = [IsAdminUser] # Or your custom permission
 
     def get(self, request):
         settings = AppSettings.load()

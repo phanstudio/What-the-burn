@@ -11,6 +11,7 @@ import AdminSettings from './components/Admin/AdminSettings'
 
 
 
+
 function App() {
   return (
     <>
@@ -32,6 +33,7 @@ function App() {
             <Results />
           </ProtectedRoute>
         } />
+
       </Routes>
       <NottyTerminalFooter />
     </>
