@@ -4,20 +4,26 @@ import {
     DollarSign,
     Plus,
     Check,
-    AlertCircle
+    AlertCircle,
+    RefreshCw,
+    Loader2
 } from 'lucide-react';
 import axios from 'axios';
 import { useAccount, useWalletClient } from 'wagmi';
 import { ethers } from 'ethers';
-import { useNavigate, } from 'react-router-dom';
-import { BURN_MANGER_ABI, BURN_MANGER_ADDRESS } from '../../utils/abi'
+import { useNavigate } from 'react-router-dom';
+import { BURN_MANGER_ABI, BURN_MANGER_ADDRESS } from '../../utils/abi';
+import { useAdminData } from './AdminLayout';
 
 const AdminSettings = () => {
-    // Current prices (these would typically come from an API or state management)
-    const [currentValues, setCurrentValues] = useState({
-        burnAmount: 25,
-        createPrice: 0.05,
-    });
+    // Get data from context
+    const {
+        settingsData,
+        setSettingsData,
+        isSettingsLoading,
+        settingsError,
+        refreshSettingsData
+    } = useAdminData();
 
     // Form state
     const [formData, setFormData] = useState({
@@ -28,6 +34,8 @@ const AdminSettings = () => {
     // UI state
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
     const jwt = sessionStorage.getItem('jwt');
     const navigate = useNavigate();
 
@@ -59,30 +67,6 @@ const AdminSettings = () => {
         }
     }, [isConnected, navigate]);
 
-    useEffect(() => {
-        const fetchInfo = async () => {
-            if (!jwt) return;
-
-            try {
-                const response = await axios.get(
-                    `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`,
-                    {
-                        headers: {
-                            Authorization: `Token ${jwt}`
-                        }
-                    }
-                );
-                setCurrentValues({
-                    burnAmount: response.data.amount_to_burn,
-                    createPrice: parseFloat(response.data.base_fee)
-                })
-            } catch (err) {
-                console.error('❌ Failed to fetch settings data:', err);
-            }
-        };
-        fetchInfo();
-    }, [jwt]);
-
     const handleInputChange = (field, value) => {
         // Only allow numbers and decimal points
         const numericValue = value.replace(/[^0-9.]/g, '');
@@ -97,6 +81,12 @@ const AdminSettings = () => {
             ...prev,
             [field]: numericValue
         }));
+    };
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await refreshSettingsData();
+        setIsRefreshing(false);
     };
 
     const handleSave = async () => {
@@ -120,7 +110,7 @@ const AdminSettings = () => {
             if (!isNaN(burnAmount)) data.amount_to_burn = burnAmount;
             if (!isNaN(createPrice)) data.base_fee = createPrice;
 
-            await callContract()
+            await callContract();
             await axios.put(
                 'https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/',
                 data,
@@ -131,8 +121,8 @@ const AdminSettings = () => {
                 }
             );
 
-            // Update current prices with new values if provided
-            const updatedValues = { ...currentValues };
+            // Update context with new values if provided
+            const updatedValues = { ...settingsData };
             if (formData.burnAmount) {
                 updatedValues.burnAmount = burnAmount;
             }
@@ -140,7 +130,7 @@ const AdminSettings = () => {
                 updatedValues.createPrice = createPrice;
             }
 
-            setCurrentValues(updatedValues);
+            setSettingsData(updatedValues);
 
             // Clear form
             setFormData({
@@ -162,19 +152,79 @@ const AdminSettings = () => {
 
     const isFormValid = formData.burnAmount || formData.createPrice;
 
+    // Loading state
+    if (isSettingsLoading) {
+        return (
+            <div className="min-h-screen bg-inherit p-3 sm:p-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Settings</h1>
+                        <p className="text-gray-400 text-sm sm:text-base">Configure pricing and system settings</p>
+                    </div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="flex items-center space-x-3">
+                            <Loader2 className="w-8 h-8 text-[#50D2C1] animate-spin" />
+                            <span className="text-[#50D2C1] text-lg">Loading settings data...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (settingsError) {
+        return (
+            <div className="min-h-screen bg-inherit p-3 sm:p-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Settings</h1>
+                        <p className="text-gray-400 text-sm sm:text-base">Configure pricing and system settings</p>
+                    </div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <p className="text-red-400 mb-4">Error loading settings data: {settingsError}</p>
+                            <button
+                                onClick={handleRefresh}
+                                className="flex items-center space-x-2 px-4 py-2 bg-[#115E4C] text-white rounded-lg hover:bg-[#50D2C1] transition-colors duration-200 mx-auto"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                <span>Retry</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-inherit p-3 sm:p-6">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Settings</h1>
-                    <p className="text-gray-400 text-sm sm:text-base">Configure pricing and system settings</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-[#50D2C1] mb-2">Admin Settings</h1>
+                            <p className="text-gray-400 text-sm sm:text-base">Configure pricing and system settings</p>
+                        </div>
+                        <button
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                            className="flex items-center space-x-2 px-4 py-2 bg-[#115E4C] text-white rounded-lg hover:bg-[#50D2C1] transition-colors duration-200 mt-4 sm:mt-0"
+                            title="Refresh Settings Data"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            <span className="text-sm font-medium">
+                                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                            </span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Settings Form */}
                 <div className="bg-[#141f24] rounded-lg shadow-lg p-4 sm:p-6 mb-6">
                     <h2 className="text-xl font-semibold text-[#50D2C1] mb-6 flex items-center space-x-2">
-
                         <span>Configurations</span>
                     </h2>
 
@@ -201,7 +251,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        {currentValues.burnAmount.toFixed(0)} Nfts
+                                        {settingsData.burnAmount.toFixed(0)} Nfts
                                     </span>
                                 </div>
                             </div>
@@ -218,7 +268,6 @@ const AdminSettings = () => {
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                                 <div className="relative flex-1">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-
                                         <DollarSign className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
@@ -233,7 +282,7 @@ const AdminSettings = () => {
                                 <div className="flex items-center space-x-2 text-sm">
                                     <span className="text-gray-400">Current:</span>
                                     <span className="text-[#50D2C1] font-semibold text-lg">
-                                        ${currentValues.createPrice}
+                                        ${settingsData.createPrice}
                                     </span>
                                 </div>
                             </div>

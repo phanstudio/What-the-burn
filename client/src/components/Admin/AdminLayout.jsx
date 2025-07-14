@@ -22,34 +22,72 @@ function AdminLayout() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Add settings data state
+    const [settingsData, setSettingsData] = useState({
+        burnAmount: 25,
+        createPrice: 0.05,
+    });
+    const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+    const [settingsError, setSettingsError] = useState(null);
+
     // Helper function to determine if a link is active
     const isActive = (path) => location.pathname === path
 
+    // Fetch dashboard data
+    const fetchDashboardData = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
+            const [pendingRes, approvedRes] = await Promise.all([
+                axios.get(uri + '/update-requests/?downloaded=false'),
+                axios.get(uri + '/update-requests/?downloaded=true')
+            ]);
+            setPendingItems(pendingRes.data);
+            setApprovedItems(approvedRes.data);
+        } catch (error) {
+            console.error("Error fetching update requests:", error);
+            setError(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch settings data
+    const fetchSettingsData = async () => {
+        const jwt = sessionStorage.getItem('jwt');
+        if (!jwt) return;
+
+        try {
+            setIsSettingsLoading(true);
+            setSettingsError(null);
+            const response = await axios.get(
+                `https://what-the-burn-backend-phanstudios-projects.vercel.app/app-settings/`,
+                {
+                    headers: {
+                        Authorization: `Token ${jwt}`
+                    }
+                }
+            );
+            setSettingsData({
+                burnAmount: response.data.amount_to_burn,
+                createPrice: parseFloat(response.data.base_fee)
+            });
+        } catch (error) {
+            console.error('❌ Failed to fetch settings data:', error);
+            setSettingsError(error.message);
+        } finally {
+            setIsSettingsLoading(false);
+        }
+    };
+
     // Fetch data on component mount
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-                const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
-                const [pendingRes, approvedRes] = await Promise.all([
-                    axios.get(uri + '/update-requests/?downloaded=false'),
-                    axios.get(uri + '/update-requests/?downloaded=true')
-                ]);
-                setPendingItems(pendingRes.data);
-                setApprovedItems(approvedRes.data);
-            } catch (error) {
-                console.error("Error fetching update requests:", error);
-                setError(error.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchDashboardData();
+        fetchSettingsData();
     }, []);
 
-    // Function to refresh data (can be called from child components)
+    // Function to refresh dashboard data (can be called from child components)
     const refreshData = async () => {
         try {
             setError(null);
@@ -66,6 +104,11 @@ function AdminLayout() {
         }
     };
 
+    // Function to refresh settings data
+    const refreshSettingsData = async () => {
+        await fetchSettingsData();
+    };
+
     // Context value to provide to child components
     const contextValue = {
         pendingItems,
@@ -74,7 +117,13 @@ function AdminLayout() {
         setApprovedItems,
         isLoading,
         error,
-        refreshData
+        refreshData,
+        // Settings data
+        settingsData,
+        setSettingsData,
+        isSettingsLoading,
+        settingsError,
+        refreshSettingsData
     };
 
     return (
