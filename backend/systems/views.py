@@ -102,11 +102,20 @@ class Gettokens(APIView):
 
     def tokens_owned(self, owner_address, image_url) -> list:
         tokens = Lovecraft.objects.filter(current_owner=owner_address).values_list('token_id', flat=True)
-        token_ids = [{
-            "id": token,
-            "image": f"{image_url}",#{token}.png",
-            "name": f"What test, Why test {token}" # can make dynamic or store # What?!
-            } for token in tokens]
+        updated_tokens = Update_Request.objects.filter(address__iexact=owner_address).values_list('update_id', flat=True) # flag them as updated
+        # token_ids = [{
+        #     "id": token,
+        #     "image": f"{image_url}",#{token}.png",
+        #     "name": f"What test, Why test {token}" # can make dynamic or store # What?!
+        #     } for token in tokens if token not in updated_tokens] # we remove them
+        token_ids = []
+        for token in tokens:
+            is_updated = token in updated_tokens
+            token_ids.append({
+                "id": token,
+                "image": f"{image_url}",
+                "name": f"What test{' (Updated)' if is_updated else ', Why test'} {token}"
+            }) # we show
         return token_ids
 
 class UpdateImageUrl(APIView):
@@ -269,6 +278,11 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
 
 class AppSettingsView(APIView): # auth
     permission_classes = [IsAdminUser] # Or your custom permission
+
+    def update(self, request, *args, **kwargs):
+        print("User:", request.user)
+        print("Token valid:", request.auth)
+        return super().update(request, *args, **kwargs)
 
     def get(self, request):
         settings = AppSettings.load()
