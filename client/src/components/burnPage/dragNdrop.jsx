@@ -1,15 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Upload, X, AlertCircle, FileText, Check } from 'lucide-react';
 
-export const DragAndDropFileInput = ({
+const DragAndDropFileInput = forwardRef(({
     onFileUpload,
     error = null,
     required = false,
     acceptedTypes = ['image/*', '.pdf', '.doc', '.docx'],
     maxSize = 10 * 1024 * 1024, // 10MB
     className = "",
-    initialFiles = [] // Added to support pre-populated files from BurnPage
-}) => {
+    initialFiles = []
+}, ref) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState(initialFiles);
     const [localError, setLocalError] = useState('');
@@ -28,13 +28,11 @@ export const DragAndDropFileInput = ({
             return false;
         }
 
-        // Check file size
         if (file.size > maxSize) {
             setLocalError(`File size must be less than ${Math.round(maxSize / 1024 / 1024)}MB`);
             return false;
         }
 
-        // Check file type
         const fileType = file.type;
         const fileName = file.name.toLowerCase();
         const isValidType = acceptedTypes.some(type => {
@@ -65,7 +63,6 @@ export const DragAndDropFileInput = ({
             if (validateFile(file)) {
                 validFiles.push(file);
             } else {
-                // Stop on first invalid file
                 return;
             }
         }
@@ -104,15 +101,27 @@ export const DragAndDropFileInput = ({
         newFiles.splice(index, 1);
         setUploadedFiles(newFiles);
         setLocalError('');
-
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-
         if (onFileUpload) {
             onFileUpload(newFiles);
         }
     };
+
+    // ✅ Expose reset method
+    useImperativeHandle(ref, () => ({
+        reset: () => {
+            setUploadedFiles([]);
+            setLocalError('');
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            if (onFileUpload) {
+                onFileUpload([]);
+            }
+        }
+    }));
 
     const hasError = error || localError;
 
@@ -120,7 +129,7 @@ export const DragAndDropFileInput = ({
         <div className={`w-full ${className}`}>
             <div className="mb-2">
                 <label className="block text-sm font-medium text-white mb-1">
-                    Upload File
+                    Upload PFP Image
                     {required && <span className="text-red-400 ml-1">*</span>}
                 </label>
             </div>
@@ -145,23 +154,19 @@ export const DragAndDropFileInput = ({
                         accept={acceptedTypes.join(',')}
                         onChange={handleFileInputChange}
                     />
-
                     <div className="flex flex-col items-center">
                         <Upload
                             size={48}
-                            className={`mb-4 ${hasError ? 'text-red-400' : isDragOver ? 'text-[#50D2C1]' : 'text-gray-400'
-                                }`}
+                            className={`mb-4 ${hasError ? 'text-red-400' : isDragOver ? 'text-[#50D2C1]' : 'text-gray-400'}`}
                         />
-                        <p className={`text-lg font-medium mb-2 ${hasError ? 'text-red-400' : 'text-white'
-                            }`}>
-                            {isDragOver ? 'Drop file here' : 'Drag & drop file here'}
+                        <p className={`text-lg font-medium mb-2 ${hasError ? 'text-red-400' : 'text-white'}`}>
+                            {isDragOver ? 'Drop image here' : 'Drag & drop image here'}
                         </p>
                         <p className="text-gray-400 text-sm mb-4">
                             or click to browse files
                         </p>
                         <p className="text-gray-500 text-xs">
-                            Supported: {acceptedTypes.join(', ')}
-                            (Max {Math.round(maxSize / 1024 / 1024)}MB)
+                            Supported: {acceptedTypes.join(', ')} (Max {Math.round(maxSize / 1024 / 1024)}MB)
                         </p>
                     </div>
                 </div>
@@ -202,6 +207,6 @@ export const DragAndDropFileInput = ({
             )}
         </div>
     );
-};
+});
 
 export default DragAndDropFileInput;

@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Image, X } from 'lucide-react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { ChevronDown, Image, X, AlertCircle } from 'lucide-react';
 
-const NFTSelect = ({
+const NFTSelect = forwardRef(({
     nfts = [],
     onSelect,
     placeholder = "Select an NFT",
@@ -10,8 +10,9 @@ const NFTSelect = ({
     disabled = false,
     unavailableNFTs = [],
     required = false,
-    onValidationChange
-}) => {
+    onValidationChange,
+    resetTrigger = 0
+}, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFT, setSelectedNFT] = useState(value);
     const [validationError, setValidationError] = useState('');
@@ -31,6 +32,32 @@ const NFTSelect = ({
 
         return errors;
     };
+
+    // Reset function
+    const resetComponent = () => {
+        setSelectedNFT(null);
+        setIsOpen(false);
+        setValidationError('');
+
+        // Notify parent component of reset
+        if (onSelect) {
+            onSelect(null);
+        }
+    };
+
+    // Expose reset function via ref
+    useImperativeHandle(ref, () => ({
+        reset: resetComponent,
+        getValue: () => selectedNFT,
+        isValid: () => !validationError
+    }));
+
+    // Handle resetTrigger changes
+    useEffect(() => {
+        if (resetTrigger > 0) {
+            resetComponent();
+        }
+    }, [resetTrigger]);
 
     useEffect(() => {
         setSelectedNFT(value);
@@ -124,8 +151,8 @@ const NFTSelect = ({
                                 </div>
                             )}
                             <div className="text-left min-w-0 flex-1">
-                                <div className="font-medium text-gray-900 truncate">{selectedNFT.name}</div>
-                                <div className="text-sm text-gray-500">ID: {selectedNFT.id}</div>
+                                <div className="font-medium text-[#50D2C1] truncate">{selectedNFT.name}</div>
+                                <div className="text-sm text-[#50D2C1]">ID: {selectedNFT.id}</div>
                             </div>
                         </>
                     ) : (
@@ -204,6 +231,8 @@ const NFTSelect = ({
             )}
         </div>
     );
-};
+});
+
+NFTSelect.displayName = 'NFTSelect';
 
 export default NFTSelect;
