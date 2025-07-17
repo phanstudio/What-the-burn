@@ -169,5 +169,4 @@ const NFTNameInput = forwardRef(({
 
 NFTNameInput.displayName = 'NFTNameInput';
 
-
 export default NFTNameInput;

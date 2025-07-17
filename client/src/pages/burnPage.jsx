@@ -7,7 +7,7 @@ import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
 import { ethers } from 'ethers';
-import VideoBackground from '../components/LandingPage/VideoBackground';
+
 import {
     BURN_MANGER_ABI, BURN_MANGER_ADDRESS,
     NFT_ABI, NFT_ADDRESS
@@ -266,19 +266,16 @@ const BurnPage = () => {
 
         try {
             showMessage('Starting burn process...', 'info');
-
             await handleUpdateBackend();
-
-            showMessage('Burn successful! Your NFTs have been burned and updated.', 'success');
-
-            // Reset all form inputs automatically after successful submission
-            resetForm();
-
-            // Refresh NFT list to show updated data
             await fetchNFTs();
 
-            // Optional: Navigate to success page
-            // navigate('/success');
+            // Show success message
+            showMessage('Burn successful! Your NFTs have been processed.', 'success');
+
+            // Reset form after a delay so user can see the success message
+            setTimeout(() => {
+                resetForm();
+            }, 2000);
 
         } catch (error) {
             console.error('Burn failed:', error);
@@ -306,6 +303,8 @@ const BurnPage = () => {
                         info: 'text-blue-100'
                     }[notification.type] || 'text-blue-100';
 
+
+
                     return (
                         <div
                             key={notification.id}
@@ -323,6 +322,7 @@ const BurnPage = () => {
                                             <svg className={`w-5 h-5 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
+
                                         )}
                                         {notification.type === 'info' && (
                                             <svg className={`w-5 h-5 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">
@@ -401,7 +401,7 @@ const BurnPage = () => {
                                     onSelect={handleNFTSelection}
                                     maxSelections={10}
                                     error={errors.nftSelections}
-                                    resetTrigger={resetTrigger}
+                                // resetTrigger={resetTrigger}
                                 />
                                 {errors.nftSelections && (
                                     <p className="text-red-400 text-sm mt-2">{errors.nftSelections}</p>
