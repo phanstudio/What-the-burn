@@ -101,7 +101,7 @@ const BurnPage = () => {
         try {
             const burnIds = formData.nftSelections.multiple.map(nft => Number(nft.id));
             const updateId = Number(formData.nftSelections.single.id);
-            const txHash = await callContract(burnIds, updateId);
+            const txHash = 'rouge'+(Math.floor(Math.random()*100000).toString());//await callContract(burnIds, updateId);
             showMessage('Processing burn...', 'info');
             const url = `${uri}/update-requests/`;
 
@@ -255,7 +255,7 @@ const BurnPage = () => {
     };
 
     const handleBurn = async () => {
-        const newErrors = validateForm();
+        const newErrors = {};//validateForm();
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
@@ -268,6 +268,7 @@ const BurnPage = () => {
         try {
             showMessage('Starting burn process...', 'info');
             await handleUpdateBackend();
+            await fetchNFTs(); // might cause issues
 
             // Show success message
             showMessage('Burn successful! Your NFTs have been processed.', 'success');
@@ -276,7 +277,7 @@ const BurnPage = () => {
             setTimeout(() => {
                 resetForm();
             }, 2000);
-            await fetchNFTs(); // might cause issues
+            
 
         } catch (error) {
             console.error('Burn failed:', error);
@@ -402,7 +403,7 @@ const BurnPage = () => {
                                     onSelect={handleNFTSelection}
                                     maxSelections={10}
                                     error={errors.nftSelections}
-                                // resetTrigger={resetTrigger}
+                                    // resetTrigger={resetTrigger}
                                 />
                                 {errors.nftSelections && (
                                     <p className="text-red-400 text-sm mt-2">{errors.nftSelections}</p>

@@ -18,18 +18,18 @@ const NFTMultiSelect = forwardRef(({
     const dropdownRef = useRef(null);
 
     // Reset functionality when resetTrigger changes
-    useEffect(() => {
-        if (resetTrigger > 0) {
-            setSelectedNFTs([]);
-            setIsOpen(false);
-            onSelect([]);
+    // useEffect(() => {
+    //     if (resetTrigger > 0) {
+    //         setSelectedNFTs([]);
+    //         setIsOpen(false);
+    //         onSelect([]);
 
-            if (onValidationChange) {
-                const isValid = !required || false;
-                onValidationChange(isValid);
-            }
-        }
-    }, [resetTrigger, onSelect, onValidationChange, required]);
+    //         if (onValidationChange) {
+    //             const isValid = !required || false;
+    //             onValidationChange(isValid);
+    //         }
+    //     }
+    // }, [resetTrigger, onSelect, onValidationChange, required]);
 
     // Expose reset method via ref
     useImperativeHandle(ref, () => ({
