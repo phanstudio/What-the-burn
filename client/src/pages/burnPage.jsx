@@ -102,6 +102,7 @@ const BurnPage = () => {
             const burnIds = formData.nftSelections.multiple.map(nft => Number(nft.id));
             const updateId = Number(formData.nftSelections.single.id);
             const txHash = await callContract(burnIds, updateId);
+            showMessage('Processing burn...', 'info');
             const url = `${uri}/update-requests/`;
 
             const newForm = new FormData();
@@ -119,7 +120,6 @@ const BurnPage = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-
             console.log('Upload success:', response.data);
             return response.data;
         } catch (error) {
@@ -181,6 +181,7 @@ const BurnPage = () => {
                 }
             );
             setNfts(response.data.tokens);
+            console.log(response.data.tokens)
         } catch (err) {
             console.error('Failed to fetch NFTs:', err);
             showMessage('Failed to fetch NFTs. Please try again.', 'error');
@@ -235,10 +236,10 @@ const BurnPage = () => {
             newErrors.singleNFT = 'Select one NFT to update.';
         }
 
-        // Validate description
-        if (!formData.description || formData.description.trim().length < 10) {
-            newErrors.description = 'Description must be at least 10 characters.';
-        }
+        // // Validate description
+        // if (!formData.description || formData.description.trim().length < 10) {
+        //     newErrors.description = 'Description must be at least 10 characters.';
+        // }
 
         // Validate NFT name
         if (!nftName || nftName.trim().length < 3) {
@@ -267,7 +268,6 @@ const BurnPage = () => {
         try {
             showMessage('Starting burn process...', 'info');
             await handleUpdateBackend();
-            await fetchNFTs();
 
             // Show success message
             showMessage('Burn successful! Your NFTs have been processed.', 'success');
@@ -276,6 +276,7 @@ const BurnPage = () => {
             setTimeout(() => {
                 resetForm();
             }, 2000);
+            await fetchNFTs(); // might cause issues
 
         } catch (error) {
             console.error('Burn failed:', error);
@@ -435,7 +436,7 @@ const BurnPage = () => {
                                     }}
                                     minLength={3}
                                     maxLength={50}
-                                    placeholder="Enter your NFT name..."
+                                    placeholder="Enter your custom NFT/pfp name..."
                                     error={errors.nftName}
                                 />
                                 {errors.nftName && (
@@ -447,7 +448,7 @@ const BurnPage = () => {
                             <div className="w-full">
                                 <TextArea
                                     ref={textAreaRef}
-                                    placeholder="Enter a description (minimum 10 characters)..."
+                                    placeholder="Enter a description, of what you want..."
                                     value={formData.description}
                                     onChange={handleDescriptionChange}
                                     error={errors.description}
