@@ -3,6 +3,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { useAdmin } from '../custom/AdminContext';
+import { handleForbidden } from '../custom/ProtectedRoute';
 
 // Create context for admin data
 const AdminDataContext = createContext();
@@ -61,6 +62,7 @@ function AdminLayout() {
             setPendingItems(pendingRes.data);
             setApprovedItems(approvedRes.data);
         } catch (error) {
+            handleForbidden(error);
             console.error("Error fetching update requests:", error);
             setError(error.message);
         } finally {

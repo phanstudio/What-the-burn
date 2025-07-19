@@ -14,6 +14,7 @@ import { ethers } from 'ethers';
 import { useNavigate } from 'react-router-dom';
 import { BURN_MANGER_ABI, BURN_MANGER_ADDRESS } from '../../utils/abi';
 import { useAdminData } from './AdminLayout';
+// import { handleForbidden } from '../custom/ProtectedRoute';
 
 const AdminSettings = () => {
     // Get data from context
@@ -142,6 +143,7 @@ const AdminSettings = () => {
             setTimeout(() => setSaveStatus(null), 3000);
 
         } catch (error) {
+            // handleForbidden(error);
             console.error('Save error:', error);
             setSaveStatus('error');
             setTimeout(() => setSaveStatus(null), 3000);

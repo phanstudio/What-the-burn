@@ -12,6 +12,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { useAdminData } from './AdminLayout';
+// import { handleForbidden } from '../custom/ProtectedRoute';
 
 const AdminDashboard = () => {
     const [copiedId, setCopiedId] = useState(null);
@@ -74,6 +75,7 @@ const AdminDashboard = () => {
                 setApprovedItems(prev => [...prev, item]);
             }
         } catch (error) {
+            // handleForbidden(error);
             console.error("Error fetching update requests:", error);
         }
     };
@@ -96,6 +98,7 @@ const AdminDashboard = () => {
                 setPendingItems([]);
             }
         } catch (error) {
+            // handleForbidden(error);
             console.error("Error downloading update requests:", error);
         }
     };
