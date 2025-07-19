@@ -17,9 +17,10 @@ export default function Header() {
 				{/* Logo and Toggle */}
 				<div className="flex items-center justify-between w-full md:w-auto">
 					<Link to="/" className="flex items-center gap-2">
-						<div className="w-10 h-10 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-lg flex items-center justify-center">
+						{/* <div className="w-10 h-10 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-lg flex items-center justify-center">
 							<Flame className="w-6 h-6 text-white" />
-						</div>
+						</div> */}
+						<img src="/What the burn logo.jpg" alt="" className="w-10 h-10 rounded-md" />
 						<h2 className="text-2xl font-bold bg-gradient-to-r from-[#02c74d] to-[#0de7ff] bg-clip-text text-transparent">
 							What the Burn
 						</h2>

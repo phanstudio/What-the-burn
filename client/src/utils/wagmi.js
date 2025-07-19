@@ -3,13 +3,8 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import {
   metaMaskWallet,
   walletConnectWallet,
-  coinbaseWallet,
-  braveWallet,
+  rabbyWallet
 } from '@rainbow-me/rainbowkit/wallets';
-import {
-  mainnet,
-  seiDevnet,
-} from 'wagmi/chains';
 import { defineChain } from 'viem';
 
 const hyperEVM = defineChain({
@@ -61,15 +56,15 @@ const hyperEVMTestnet = defineChain({
 export const config = getDefaultConfig({
   appName: 'What the burn?',
   projectId: '5379c9e3bf58798f600c7cd162a5120f',
-  chains: [hyperEVM, hyperEVMTestnet],//, mainnet, seiDevnet],
+  chains: [hyperEVM, hyperEVMTestnet], // defualt wallets
   ssr: false, // If your dApp uses server side rendering (SSR)
   wallets: [
     {
       groupName: 'Recommended Wallets',
       wallets: [
         metaMaskWallet,
-        coinbaseWallet,
         walletConnectWallet,
+        rabbyWallet,
       ],
     },
   ],

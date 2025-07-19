@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DragAndDropFileInput from '../components/burnPage/dragNdrop';
@@ -7,7 +7,7 @@ import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
 import { ethers } from 'ethers';
-import VideoBackground from '../components/LandingPage/VideoBackground';
+
 import {
     BURN_MANGER_ABI, BURN_MANGER_ADDRESS,
     NFT_ABI, NFT_ADDRESS
@@ -25,6 +25,13 @@ const BurnPage = () => {
     const { data: walletClient } = useWalletClient();
     const [nftName, setNftName] = useState('');
     const [errors, setErrors] = useState({});
+    const [resetTrigger, setResetTrigger] = useState(0);
+
+    // Add refs for form components
+    const nftSelectorRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const textAreaRef = useRef(null);
+    const nftNameInputRef = useRef(null);
 
     const [formData, setFormData] = useState({
         description: '',
@@ -57,6 +64,35 @@ const BurnPage = () => {
         setNotifications(prev => prev.filter(n => n.id !== id));
     };
 
+    // Reset all form inputs
+    const resetForm = () => {
+        // Reset state
+        setFormData({
+            description: '',
+            nftSelections: { multiple: [], single: null },
+            uploadedFiles: []
+        });
+        setNftName('');
+        setErrors({});
+
+        // Trigger reset for NFTSelector and NFTMultiSelect components
+        setResetTrigger(prev => prev + 1);
+
+        // Reset other form components via refs if they have reset methods
+        if (nftSelectorRef.current && nftSelectorRef.current.reset) {
+            nftSelectorRef.current.reset();
+        }
+        if (fileInputRef.current && fileInputRef.current.reset) {
+            fileInputRef.current.reset();
+        }
+        if (textAreaRef.current && textAreaRef.current.reset) {
+            textAreaRef.current.reset();
+        }
+        if (nftNameInputRef.current && nftNameInputRef.current.reset) {
+            nftNameInputRef.current.reset();
+        }
+    };
+
     const handleUpdateBackend = async () => {
         if (!isConnected || !walletClient) {
             throw new Error('Wallet not connected');
@@ -66,6 +102,7 @@ const BurnPage = () => {
             const burnIds = formData.nftSelections.multiple.map(nft => Number(nft.id));
             const updateId = Number(formData.nftSelections.single.id);
             const txHash = await callContract(burnIds, updateId);
+            showMessage('Processing burn...', 'info');
             const url = `${uri}/update-requests/`;
 
             const newForm = new FormData();
@@ -83,7 +120,6 @@ const BurnPage = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-
             console.log('Upload success:', response.data);
             return response.data;
         } catch (error) {
@@ -199,11 +235,6 @@ const BurnPage = () => {
             newErrors.singleNFT = 'Select one NFT to update.';
         }
 
-        // Validate description
-        if (!formData.description || formData.description.trim().length < 10) {
-            newErrors.description = 'Description must be at least 10 characters.';
-        }
-
         // Validate NFT name
         if (!nftName || nftName.trim().length < 3) {
             newErrors.nftName = 'NFT name must be at least 3 characters.';
@@ -230,22 +261,17 @@ const BurnPage = () => {
 
         try {
             showMessage('Starting burn process...', 'info');
-
             await handleUpdateBackend();
+            await fetchNFTs(); // might cause issues
 
-            showMessage('Burn successful! Your NFTs have been burned and updated.', 'success');
+            // Show success message
+            showMessage('Burn successful! Your NFTs have been processed.', 'success');
 
-            // Reset form
-            setFormData({
-                description: '',
-                nftSelections: { multiple: [], single: null },
-                uploadedFiles: []
-            });
-            setNftName('');
-            setErrors({});
-
-            // Optional: Navigate to success page
-            // navigate('/success');
+            // Reset form after a delay so user can see the success message
+            setTimeout(() => {
+                resetForm();
+            }, 2000);
+            
 
         } catch (error) {
             console.error('Burn failed:', error);
@@ -273,6 +299,8 @@ const BurnPage = () => {
                         info: 'text-blue-100'
                     }[notification.type] || 'text-blue-100';
 
+
+
                     return (
                         <div
                             key={notification.id}
@@ -290,6 +318,7 @@ const BurnPage = () => {
                                             <svg className={`w-5 h-5 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
+
                                         )}
                                         {notification.type === 'info' && (
                                             <svg className={`w-5 h-5 ${iconColor}`} fill="currentColor" viewBox="0 0 20 20">
@@ -363,10 +392,12 @@ const BurnPage = () => {
                             {/* NFT Selector */}
                             <div className="w-full">
                                 <NFTSelector
+                                    ref={nftSelectorRef}
                                     nfts={nfts}
                                     onSelect={handleNFTSelection}
                                     maxSelections={10}
                                     error={errors.nftSelections}
+                                    // resetTrigger={resetTrigger}
                                 />
                                 {errors.nftSelections && (
                                     <p className="text-red-400 text-sm mt-2">{errors.nftSelections}</p>
@@ -379,6 +410,7 @@ const BurnPage = () => {
                             {/* File Upload */}
                             <div className="w-full">
                                 <DragAndDropFileInput
+                                    ref={fileInputRef}
                                     onFileUpload={handleFileUpload}
                                     required={true}
                                     error={errors.uploadedFiles}
@@ -389,6 +421,7 @@ const BurnPage = () => {
                             {/* NFT Name Input */}
                             <div className="w-full">
                                 <NFTNameInput
+                                    ref={nftNameInputRef}
                                     value={nftName}
                                     onChange={(value) => {
                                         setNftName(value);
@@ -398,7 +431,7 @@ const BurnPage = () => {
                                     }}
                                     minLength={3}
                                     maxLength={50}
-                                    placeholder="Enter your NFT name..."
+                                    placeholder="Enter your custom NFT/pfp name..."
                                     error={errors.nftName}
                                 />
                                 {errors.nftName && (
@@ -409,7 +442,8 @@ const BurnPage = () => {
                             {/* Description TextArea */}
                             <div className="w-full">
                                 <TextArea
-                                    placeholder="Enter a description (minimum 10 characters)..."
+                                    ref={textAreaRef}
+                                    placeholder="Enter a description, of what you want..."
                                     value={formData.description}
                                     onChange={handleDescriptionChange}
                                     error={errors.description}
@@ -420,11 +454,11 @@ const BurnPage = () => {
                             </div>
 
                             {/* Action Button */}
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+                            <div className="flex items-center justify-center pt-4">
                                 <button
                                     onClick={handleBurn}
                                     disabled={isSubmitting || loading}
-                                    className={`w-full sm:w-auto px-6 py-3 rounded-md font-semibold transition-all duration-200 ${!isSubmitting && !loading
+                                    className={`px-8 py-3 rounded-md font-semibold text-lg transition-all duration-200 ${!isSubmitting && !loading
                                         ? 'bg-[#50D2C1] hover:bg-cyan-500 text-white'
                                         : 'bg-gray-600 cursor-not-allowed text-gray-400'
                                         }`}

@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Image, X } from 'lucide-react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { ChevronDown, Image, X, AlertCircle } from 'lucide-react';
 
-const NFTSelect = ({
+const NFTSelect = forwardRef(({
     nfts = [],
     onSelect,
     placeholder = "Select an NFT",
@@ -10,8 +10,9 @@ const NFTSelect = ({
     disabled = false,
     unavailableNFTs = [],
     required = false,
-    onValidationChange
-}) => {
+    onValidationChange,
+    resetTrigger = 0
+}, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFT, setSelectedNFT] = useState(value);
     const [validationError, setValidationError] = useState('');
@@ -31,6 +32,32 @@ const NFTSelect = ({
 
         return errors;
     };
+
+    // Reset function
+    const resetComponent = () => {
+        setSelectedNFT(null);
+        setIsOpen(false);
+        setValidationError('');
+
+        // Notify parent component of reset
+        if (onSelect) {
+            onSelect(null);
+        }
+    };
+
+    // Expose reset function via ref
+    useImperativeHandle(ref, () => ({
+        reset: resetComponent,
+        getValue: () => selectedNFT,
+        isValid: () => !validationError
+    }));
+
+    // Handle resetTrigger changes
+    useEffect(() => {
+        if (resetTrigger > 0) {
+            resetComponent();
+        }
+    }, [resetTrigger]);
 
     useEffect(() => {
         setSelectedNFT(value);
@@ -89,11 +116,6 @@ const NFTSelect = ({
     // Filter out invalid NFTs
     const validNFTs = nfts.filter(isValidNFT);
     const sampleNFTs = [
-        { id: "1", name: "Cool NFT #1", image: "https://via.placeholder.com/40x40/6366f1/white?text=1" },
-        { id: "2", name: "Awesome NFT #2", image: "https://via.placeholder.com/40x40/8b5cf6/white?text=2" },
-        { id: "3", name: "Epic NFT #3", image: "https://via.placeholder.com/40x40/ec4899/white?text=3" },
-        { id: "4", name: "Rare NFT #4", image: "https://via.placeholder.com/40x40/10b981/white?text=4" },
-        { id: "5", name: "Legendary NFT #5", image: "https://via.placeholder.com/40x40/f59e0b/white?text=5" }
     ];
 
     const nftList = validNFTs.length > 0 ? validNFTs : sampleNFTs;
@@ -124,8 +146,8 @@ const NFTSelect = ({
                                 </div>
                             )}
                             <div className="text-left min-w-0 flex-1">
-                                <div className="font-medium text-gray-900 truncate">{selectedNFT.name}</div>
-                                <div className="text-sm text-gray-500">ID: {selectedNFT.id}</div>
+                                <div className="font-medium text-[#50D2C1] truncate">{selectedNFT.name}</div>
+                                <div className="text-sm text-[#50D2C1]">ID: {selectedNFT.id}</div>
                             </div>
                         </>
                     ) : (
@@ -204,6 +226,8 @@ const NFTSelect = ({
             )}
         </div>
     );
-};
+});
+
+NFTSelect.displayName = 'NFTSelect';
 
 export default NFTSelect;

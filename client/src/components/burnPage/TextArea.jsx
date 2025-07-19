@@ -30,7 +30,7 @@ export const TextArea = ({
         <div className={`w-full ${className}`}>
             <div className="mb-2">
                 <label className="block text-sm font-medium text-white mb-1">
-                    Description
+                    Description (optional)
                     {required && <span className="text-red-400 ml-1">*</span>}
                 </label>
             </div>
