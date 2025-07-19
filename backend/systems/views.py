@@ -1,33 +1,26 @@
 from datetime import datetime
-from django.http import HttpResponse
-from .models import EthUser, ImageUrl, Update_Request, AppSettings, Lovecraft
 from eth_account.messages import encode_defunct
 from eth_account import Account
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework import viewsets, status
+from django.conf import settings
+from django.http import HttpResponse
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from .permissions import HasCronSecretPermission
+from .models import EthUser, ImageUrl, Update_Request, AppSettings, Lovecraft, ExpiringToken
 from .serializers import (
     SignatureVerifySerializer, UpdateRequestSerializer,
     AppSettingsSerializer
 )
-from django.conf import settings
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from io import BytesIO
 from web3 import Web3
 import requests
-from rest_framework import viewsets, status
-from .models import EthUser, ExpiringToken
-from django.utils.crypto import get_random_string
-from django.utils import timezone
-from .permissions import HasCronSecretPermission
-from dotenv import load_dotenv
-import logging
 import zipfile
-from io import BytesIO
-import os
 import secrets
-
-load_dotenv()
-logger = logging.getLogger(__name__)
 
 def index(request):
     now = datetime.now()
@@ -103,19 +96,15 @@ class Gettokens(APIView):
     def tokens_owned(self, owner_address, image_url) -> list:
         tokens = Lovecraft.objects.filter(current_owner=owner_address).values_list('token_id', flat=True)
         updated_tokens = Update_Request.objects.filter(address__iexact=owner_address).values_list('update_id', flat=True) # flag them as updated
-        # token_ids = [{
-        #     "id": token,
-        #     "image": f"{image_url}",#{token}.png",
-        #     "name": f"What test, Why test {token}" # can make dynamic or store # What?!
-        #     } for token in tokens if token not in updated_tokens] # we remove them
         token_ids = []
         for token in tokens:
             is_updated = token in updated_tokens
             token_ids.append({
                 "id": token,
-                "image": f"{image_url}",
-                "name": f"What test{' (Updated)' if is_updated else ', Why test'} {token}"
-            }) # we show
+                "image": f"{image_url}", # add .png for main build
+                "name": f"What test{' (Updated)' if is_updated else ', Why test'} {token}", # change to main net eventualy
+                "updated": is_updated
+            })
         return token_ids
 
 class UpdateImageUrl(APIView):
