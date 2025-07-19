@@ -1,13 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
-
-// const ProtectedRoute = ({ children }) => {
-//     const jwt = sessionStorage.getItem('jwt');
-//     return jwt ? children : <Navigate to="/" replace />;
-// };
-
-// export default ProtectedRoute;
+import { disconnect } from '@wagmi/core';
+import { config } from '../utils/wagmi';
 
 export const ProtectedRoute = ({ children }) => {
   const jwt = sessionStorage.getItem('jwt');
@@ -26,3 +21,11 @@ export const AdminProtectedRoute = ({ children }) => {
 
   return children;
 };
+
+export function handleForbidden(err) {
+  if (err?.response?.status === 403) {
+    console.warn('403 Forbidden — logging out...');
+    sessionStorage.removeItem('jwt');
+    disconnect(config);
+  }
+}

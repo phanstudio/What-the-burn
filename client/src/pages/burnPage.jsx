@@ -7,7 +7,7 @@ import NFTSelector from '../components/burnPage/NFTSelector';
 import TextArea from '../components/burnPage/TextArea';
 import NFTNameInput from '../components/burnPage/NFTNameInput';
 import { ethers } from 'ethers';
-
+import { handleForbidden } from '../components/custom/ProtectedRoute';
 import {
     BURN_MANGER_ABI, BURN_MANGER_ADDRESS,
     NFT_ABI, NFT_ADDRESS
@@ -25,7 +25,6 @@ const BurnPage = () => {
     const { data: walletClient } = useWalletClient();
     const [nftName, setNftName] = useState('');
     const [errors, setErrors] = useState({});
-    const [resetTrigger, setResetTrigger] = useState(0);
 
     // Add refs for form components
     const nftSelectorRef = useRef(null);
@@ -123,6 +122,7 @@ const BurnPage = () => {
             console.log('Upload success:', response.data);
             return response.data;
         } catch (error) {
+            // handleForbidden(error);
             console.error('Backend update failed:', error);
             throw new Error(`Backend update failed: ${error.message}`);
         }
@@ -182,6 +182,7 @@ const BurnPage = () => {
             );
             setNfts(response.data.tokens);
         } catch (err) {
+            handleForbidden(err);
             console.error('Failed to fetch NFTs:', err);
             showMessage('Failed to fetch NFTs. Please try again.', 'error');
         } finally {
