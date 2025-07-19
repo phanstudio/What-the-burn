@@ -101,7 +101,7 @@ const BurnPage = () => {
         try {
             const burnIds = formData.nftSelections.multiple.map(nft => Number(nft.id));
             const updateId = Number(formData.nftSelections.single.id);
-            const txHash = 'rouge'+(Math.floor(Math.random()*100000).toString());//await callContract(burnIds, updateId);
+            const txHash = await callContract(burnIds, updateId);
             showMessage('Processing burn...', 'info');
             const url = `${uri}/update-requests/`;
 
@@ -181,7 +181,6 @@ const BurnPage = () => {
                 }
             );
             setNfts(response.data.tokens);
-            console.log(response.data.tokens)
         } catch (err) {
             console.error('Failed to fetch NFTs:', err);
             showMessage('Failed to fetch NFTs. Please try again.', 'error');
@@ -236,11 +235,6 @@ const BurnPage = () => {
             newErrors.singleNFT = 'Select one NFT to update.';
         }
 
-        // // Validate description
-        // if (!formData.description || formData.description.trim().length < 10) {
-        //     newErrors.description = 'Description must be at least 10 characters.';
-        // }
-
         // Validate NFT name
         if (!nftName || nftName.trim().length < 3) {
             newErrors.nftName = 'NFT name must be at least 3 characters.';
@@ -255,7 +249,7 @@ const BurnPage = () => {
     };
 
     const handleBurn = async () => {
-        const newErrors = {};//validateForm();
+        const newErrors = validateForm();
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
