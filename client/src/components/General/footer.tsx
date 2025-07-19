@@ -2,8 +2,8 @@ export default function NottyTerminalFooter() {
 	return (
 		<div className='bg-[#0F1A1F] border-t-2 border-gray-600 text-white py-8 px-4'>
 			<div className='container mx-auto'>
-				<div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-16 pl-24 pr-24'>
-					<div className='mb-4 md:mb-0'>
+				<div className='flex flex-col items-center md:flex-row justify-between sm:items-start md:items-center mb-16 sm:pl-24 sm:pr-24'>
+					<div className='mb-2 md:mb-0'>
 						<h2 className='text-2xl font-bold bg-gradient-to-r from-[#02c74d] to-[#0de7ff] bg-clip-text text-transparent'>
 							What the Burn
 						</h2>

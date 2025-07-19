@@ -11,7 +11,7 @@ const NFTMultiSelect = forwardRef(({
     unavailableNFTs = [],
     required = false,
     onValidationChange,
-    resetTrigger = 0 // New prop to trigger reset
+    resetTrigger = 0 // New prop to trigger reset 
 }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNFTs, setSelectedNFTs] = useState([]);
@@ -194,7 +194,7 @@ const NFTMultiSelect = forwardRef(({
                             key={nft.id}
                             className="flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
                         >
-                            <span className="truncate max-w-24">{nft.name}</span>
+                            <span className=" truncate max-w-14">{nft.id}</span>
                             <button
                                 onClick={(e) => removeNFT(nft, e)}
                                 className="hover:bg-blue-200 rounded-full p-0.5"

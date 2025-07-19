@@ -51,11 +51,11 @@ export default function Header() {
 			{/* Mobile Dropdown */}
 			{mobileMenuOpen && (
 				<div className="md:hidden px-4 pb-4">
-					<div className="flex flex-col space-y-3 rounded-lg bg-[#12242C] p-4 shadow-md">
+					<div className="flex items-center sm:items-start flex-col space-y-3 rounded-lg bg-[#12242C] p-4 shadow-md">
 						{(isConnected && isAdmin) && (
 							<Link
 								to="/admin/dashboard"
-								className="bg-[#50D2C1] text-gray-800 px-4 py-2 rounded-lg hover:text-white transition"
+								className="bg-[#50D2C1] w-full text-gray-800 px-4 py-2 rounded-lg hover:text-white transition"
 							>
 								Admin Dashboard
 							</Link>
