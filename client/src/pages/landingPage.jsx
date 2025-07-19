@@ -199,7 +199,7 @@ function LandingPage() {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                             <Link to="/burn">
-                                <button className="group bg-gradient-to-r from-teal-400 to-emerald-500 px-8 py-4 rounded-md text-lg font-semibold hover:from-teal-500 hover:to-emerald-600 transition-all duration-300 flex items-center justify-center space-x-2 shadow-2xl hover:shadow-teal-500/25 text-white">
+                                <button className="group bg-gradient-to-r w-full from-teal-400 to-emerald-500 px-8 py-4 rounded-md text-lg font-semibold hover:from-teal-500 hover:to-emerald-600 transition-all duration-300 flex items-center justify-center space-x-2 shadow-2xl hover:shadow-teal-500/25 text-white">
                                     <Flame className="w-5 h-5 group-hover:animate-pulse" />
                                     <span>{isLoading ? 'Loading...' : 'Burn NFTs'}</span>
                                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
