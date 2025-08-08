@@ -78,6 +78,17 @@ class Lovecraft(models.Model):
         managed = False  # Prevent Django from altering the table
         db_table = 'lovecraft'
 
+class Whatcraft(models.Model):
+    token_id = models.BigIntegerField()
+    current_owner = models.CharField(max_length=42)
+    block_number = models.BigIntegerField()
+    timestamp = models.DecimalField(max_digits=30, decimal_places=0)
+    transaction_hash = models.CharField(max_length=66)
+
+    class Meta:
+        managed = False  # Prevent Django from altering the table
+        db_table = 'Whatcraft'
+
 class Update_Request(models.Model):
     transaction_hash = models.CharField(max_length=88, primary_key=True, unique=True, null= False)
     address = models.CharField(max_length=44)
