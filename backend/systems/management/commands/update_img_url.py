@@ -35,7 +35,10 @@ class Command(BaseCommand):
         self.update(image_uri)
 
     def update(self, img):
-        ImageUrl.objects.update_or_create(id=1, url=img)
+        ImageUrl.objects.update_or_create(
+            id=1,                   # lookup field
+            defaults={'url': img}   # fields to update if exists
+        )
         self.stdout.write(self.style.SUCCESS("Finished populating tokens."))
 
     def get_token_uri(self, token_id:int = 1)-> str:

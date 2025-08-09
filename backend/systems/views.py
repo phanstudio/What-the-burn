@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from .permissions import HasCronSecretPermission
-from .models import EthUser, ImageUrl, Update_Request, AppSettings, Lovecraft, ExpiringToken
+from .models import EthUser, ImageUrl, Update_Request, AppSettings, Whatcraft, ExpiringToken
 from .serializers import (
     SignatureVerifySerializer, UpdateRequestSerializer,
     AppSettingsSerializer
@@ -34,7 +34,7 @@ def index(request):
     '''
     return HttpResponse(html)
 
-class GetSignMessageView(APIView): # cors should help with this
+class GetSignMessageView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
@@ -87,6 +87,7 @@ class VerifySignatureView(APIView):
 
 class Gettokens(APIView): 
     permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         wallet = request.user.address.lower()
         img_url = ImageUrl.objects.get(id=1)
@@ -94,15 +95,15 @@ class Gettokens(APIView):
         return Response({"tokens": tokens})
 
     def tokens_owned(self, owner_address, image_url) -> list:
-        tokens = Lovecraft.objects.filter(current_owner=owner_address).values_list('token_id', flat=True)
+        tokens = Whatcraft.objects.filter(current_owner=owner_address).values_list('token_id', flat=True)
         updated_tokens = Update_Request.objects.filter(address__iexact=owner_address).values_list('update_id', flat=True) # flag them as updated
         token_ids = []
         for token in tokens:
             is_updated = token in updated_tokens
             token_ids.append({
                 "id": token,
-                "image": f"{image_url}", # add .png for main build
-                "name": f"What test{' (Updated)' if is_updated else ', Why test'} {token}", # change to main net eventualy
+                "image": f"{image_url}{token}.png", # add .png for main build
+                "name": f"WHAT{' (Updated) #' if is_updated else ' #'}{token}", # change to main net eventualy
                 "updated": is_updated
             })
         return token_ids
@@ -265,8 +266,8 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
-class AppSettingsView(APIView): # auth
-    permission_classes = [IsAdminUser] # Or your custom permission
+class AppSettingsView(APIView):
+    permission_classes = [IsAdminUser]
 
     def update(self, request, *args, **kwargs):
         print("User:", request.user)
