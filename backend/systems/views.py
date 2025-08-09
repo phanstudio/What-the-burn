@@ -34,7 +34,7 @@ def index(request):
     '''
     return HttpResponse(html)
 
-class GetSignMessageView(APIView): # cors should help with this
+class GetSignMessageView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         wallet = request.query_params.get("wallet", "")
@@ -102,8 +102,8 @@ class Gettokens(APIView):
             is_updated = token in updated_tokens
             token_ids.append({
                 "id": token,
-                "image": f"{image_url}/{token}.png", # add .png for main build
-                "name": f"What test{' (Updated)' if is_updated else ', Why test'} {token}", # change to main net eventualy
+                "image": f"{image_url}{token}.png", # add .png for main build
+                "name": f"WHAT{' (Updated) #' if is_updated else ' #'}{token}", # change to main net eventualy
                 "updated": is_updated
             })
         return token_ids
@@ -266,8 +266,8 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
-class AppSettingsView(APIView): # auth
-    permission_classes = [IsAdminUser] # Or your custom permission
+class AppSettingsView(APIView):
+    permission_classes = [IsAdminUser]
 
     def update(self, request, *args, **kwargs):
         print("User:", request.user)
