@@ -5,7 +5,7 @@ export const NFT_ABI = [
     "function isApprovedForAll(address owner, address operator) view returns (bool)",
 ];
 
-export const BURN_MANGER_ADDRESS = '0xF83AeF425Ab69124a398E08F289048FF8404a6a3';
+export const BURN_MANGER_ADDRESS = '0xFFaCdbB2BF77efDE0d26650213B1804ff89c824f';
 export const BURN_MANGER_ABI = [
     "function createPremium(uint32[] tokenIds, uint32 update_id)",
     "function getBurnFee() public view returns (uint256)",
