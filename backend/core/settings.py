@@ -12,12 +12,12 @@ SECRET_KEY = os.getenv('SECERT_KEY')
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    '127.0.0.1', 
-    'localhost', 
+    # '127.0.0.1', 
+    # 'localhost', 
     'what-the-burn-backend-phanstudios-projects.vercel.app',
     'what-the-burn-yvet.vercel.app',
     'what-the-burn-backend-git-main-phanstudios-projects.vercel.app',
-    '.vercel.app'
+    '.vercel.app',
 ]
 
 INSTALLED_APPS = [
@@ -36,7 +36,7 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    # "http://localhost:5173",
     "https://what-the-burn-phanstudios-projects.vercel.app",
     "https://what-the-burn.vercel.app",
     "https://what-the-burn-git-main-phanstudios-projects.vercel.app",
