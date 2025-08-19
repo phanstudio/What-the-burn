@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
 import { disconnect } from '@wagmi/core';
-import { config } from '../utils/wagmi';
+import { config } from '../../utils/wagmi';
 
 export const ProtectedRoute = ({ children }) => {
   const jwt = sessionStorage.getItem('jwt');
