@@ -11,14 +11,16 @@ SECRET_KEY = os.getenv('SECERT_KEY')
 
 DEBUG = False
 
+VERCEL_URL = os.environ.get("VERCEL_URL")  # Vercel sets this per deployment
+
 ALLOWED_HOSTS = [
-    # '127.0.0.1', 
-    # 'localhost', 
     'what-the-burn-backend-phanstudios-projects.vercel.app',
     'what-the-burn-yvet.vercel.app',
     'what-the-burn-backend-git-main-phanstudios-projects.vercel.app',
-    '.vercel.app',
 ]
+
+if VERCEL_URL:
+    ALLOWED_HOSTS.append(VERCEL_URL)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
