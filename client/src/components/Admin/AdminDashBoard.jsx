@@ -65,8 +65,12 @@ const AdminDashboard = () => {
 
     const handleDownload = async (item) => {
         try {
+            const jwt = sessionStorage.getItem('jwt');
             const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app';
             const response = await axios.get(`${uri}/update-requests/${item.transaction_hash}/download/`, {
+                headers: {
+                    Authorization: `Token ${jwt}`
+                },
                 responseType: 'blob',
             });
             downloadBlobAsFile(response.data, response.headers['content-disposition'], `${item.transaction_hash}.zip`);
@@ -88,8 +92,12 @@ const AdminDashboard = () => {
             url_type = 'update_requests.zip'
         }
         try {
+            const jwt = sessionStorage.getItem('jwt');
             const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app';
             const response = await axios.get(`${uri}/update-requests/${download_type}/`, {
+                headers: {
+                    Authorization: `Token ${jwt}`
+                },
                 responseType: 'blob',
             });
             downloadBlobAsFile(response.data, response.headers['content-disposition'], url_type);

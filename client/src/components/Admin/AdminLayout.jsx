@@ -110,8 +110,16 @@ function AdminLayout() {
             setError(null);
             const uri = 'https://what-the-burn-backend-phanstudios-projects.vercel.app'
             const [pendingRes, approvedRes] = await Promise.all([
-                axios.get(uri + '/update-requests/?downloaded=false'),
-                axios.get(uri + '/update-requests/?downloaded=true')
+                axios.get(uri + '/update-requests/?downloaded=false', {
+                    headers: {
+                        Authorization: `Token ${jwt}`
+                    }
+                }),
+                axios.get(uri + '/update-requests/?downloaded=true', {
+                    headers: {
+                        Authorization: `Token ${jwt}`
+                    }
+                })
             ]);
             setPendingItems(pendingRes.data);
             setApprovedItems(approvedRes.data);
