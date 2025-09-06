@@ -126,6 +126,12 @@ class ExpiringToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            expiration_hours = getattr(settings, "CUSTOM_EXPIRATION_HOURS", 24)
+            if self.user.is_staff:
+                # Admins: 1 day
+                expiration_hours = getattr(settings, "ADMIN_EXPIRATION_HOURS", 24)
+            else:
+                # Regular users: 4x longer
+                expiration_hours = getattr(settings, "USER_EXPIRATION_HOURS", 96)
+
             self.expires_at = timezone.now() + datetime.timedelta(hours=expiration_hours)
         return super().save(*args, **kwargs)
