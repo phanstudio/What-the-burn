@@ -44,7 +44,9 @@ class Command(BaseCommand):
     def get_token_uri(self, token_id:int = 1)-> str:
         rpc_url = settings.ETH_PROVIDER_URL
         web3 = Web3(Web3.HTTPProvider(rpc_url))
-        assert web3.is_connected(), "Can't connect to HyperEVM"
+        # assert web3.is_connected(), "Can't connect to HyperEVM"
+        if not web3.is_connected():
+            raise ConnectionError("Can't connect to HyperEVM")
         contract_address = settings.ETH_COLLECTION_CONTRACT
         abi = [
             {

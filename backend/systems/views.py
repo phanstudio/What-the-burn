@@ -147,7 +147,9 @@ class UpdateImageUrlFromIPFS(APIView):
     def get_token_uri(self, token_id:int = 1)->str:
         rpc_url = settings.ETH_PROVIDER_URL
         web3 = Web3(Web3.HTTPProvider(rpc_url))
-        assert web3.is_connected(), "Can't connect to HyperEVM"
+        # assert web3.is_connected(), "Can't connect to HyperEVM"
+        if not web3.is_connected():
+            raise ConnectionError("Can't connect to HyperEVM")
         contract_address = settings.ETH_COLLECTION_CONTRACT
         abi = [
             {
@@ -212,14 +214,29 @@ class UpdateRequestViewSet(viewsets.ModelViewSet):
                 )
                 zip_file.writestr(f"{instance.transaction_hash}/metadata.txt", metadata)
 
+                # # Add image
+                # if instance.image:
+                #     try:
+                #         img_url = instance.get_image_original()
+                #         img_response = requests.get(img_url)
+                #         if img_response.status_code == 200:
+                #             ext = img_url.split('.')[-1].split('?')[0]
+                #             zip_file.writestr(f"{instance.transaction_hash}/image.{ext}", img_response.content)
+                #     except Exception as e:
+                #         zip_file.writestr(f"{instance.transaction_hash}/error.txt", f"Image failed: {str(e)}")
+                
                 # Add image
                 if instance.image:
                     try:
                         img_url = instance.get_image_original()
-                        img_response = requests.get(img_url)
+                        img_response = requests.get(img_url, timeout=15)  # Add timeout here
                         if img_response.status_code == 200:
                             ext = img_url.split('.')[-1].split('?')[0]
                             zip_file.writestr(f"{instance.transaction_hash}/image.{ext}", img_response.content)
+                        else:
+                            zip_file.writestr(f"{instance.transaction_hash}/error.txt", f"Image request failed with status {img_response.status_code}")
+                    except requests.exceptions.Timeout:
+                        zip_file.writestr(f"{instance.transaction_hash}/error.txt", "Image request timed out")
                     except Exception as e:
                         zip_file.writestr(f"{instance.transaction_hash}/error.txt", f"Image failed: {str(e)}")
 
